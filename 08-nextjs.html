@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 08 — Next.js · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>.step{margin:16px 0 22px;padding:16px 18px;background:var(--card-soft);border-radius:10px;border-left:3px solid var(--accent);}.step h4{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--fg);}.step .what,.step .why{color:var(--fg-soft);font-size:14px;margin:0 0 8px;}.step .why{color:var(--fg-muted);font-size:13px;font-style:italic;}.step .do{font-size:13px;color:var(--fg-soft);margin:8px 0 6px;font-weight:600;}.step .verify{margin-top:12px;padding:10px 14px;background:var(--success-soft);border-radius:8px;color:var(--success-fg);font-size:13px;}.launcher{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:20px 0 32px;}.launcher a{display:flex;flex-direction:column;padding:14px 18px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-fg);text-decoration:none;font-weight:600;}.launcher a small{font-weight:400;font-size:12px;color:var(--fg-soft);margin-top:4px;}</style>
+</head><body><main>
+
+<nav class="nav"><a href="07-typescript.html">← Worksheet 07</a><span style="color:var(--fg-muted)">Worksheet 08 of 17</span><a href="09-sql-postgres.html">Next: SQL →</a></nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>Next.js (App Router)</h1>
+<p class="meta"><span>10 focus blocks</span><span>~5 hours total</span><span>Phase 3 prep</span><span>Reference: <a href="https://nextjs.org/learn" target="_blank">Next.js Learn</a></span></p>
+<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+
+<div class="callout info"><span class="callout-label">What is Next.js?</span>The most popular React framework. App Router is the modern (2023+) routing system. Your portfolio is built on this. By the end of this worksheet you can explain Server vs Client components and ship a deployed blog.</div>
+
+<p class="lead">Mini-project at the end is a deployed blog on Vercel.</p>
+
+<h2>What this covers</h2>
+<div class="mermaid">
+flowchart TD
+    Root["<b>Next.js App Router</b>"]:::root
+    Root --> A["<b>Routing</b><br/>page.tsx · layout · dynamic"]
+    Root --> B["<b>Components</b><br/>Server vs Client"]
+    Root --> C["<b>Data</b><br/>fetch in RSC · revalidate"]
+    Root --> D["<b>Mutations</b><br/>Server Actions"]
+    Root --> E["<b>UI states</b><br/>loading · error · not-found"]
+    Root --> F["<b>Deploy</b><br/>Vercel"]
+    classDef root fill:#4f46e5,color:#ffffff,stroke:#4f46e5,stroke-width:2px
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Click <strong>Open VS Code here</strong> to launch VS Code on this worksheet's folder. The "terminal" referred to throughout is <strong>VS Code's integrated terminal panel</strong> — open it via <strong>View → Terminal</strong> at the top menu. No separate window needed.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-08">▶ Open VS Code here<small>opens VS Code on <code>08-nextjs</code>.</small></a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/08-nextjs/">Open the folder in Explorer</a>
+</div>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 1</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-08">▶ Open VS Code here</a></div>
+  <h2>Scaffold the app</h2>
+  <div class="step">
+    <h4>1. Create the Next.js app inside the worksheet folder</h4>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>cd "C:\Users\David\Documents\AI Course\08-nextjs"
+npx create-next-app@latest study-nextjs --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --turbopack --yes</code></pre>
+    <p style="font-size:13px;color:var(--fg-muted);">Accept all defaults. Picks Turbopack as the bundler.</p>
+    <div class="verify"><strong>Worked?</strong> A new folder <code>study-nextjs</code> appears.</div>
+  </div>
+  <div class="step">
+    <h4>2. Run dev server</h4>
+    <pre><code>cd study-nextjs
+npm run dev</code></pre>
+    <p class="do">Open <a href="http://localhost:3000" target="_blank">http://localhost:3000</a> in Chrome.</p>
+    <div class="verify"><strong>Worked?</strong> Default Next.js page loads.</div>
+  </div>
+  <div class="step">
+    <h4>3. Edit the homepage live</h4>
+    <p class="do">Open <code>src/app/page.tsx</code> in VS Code. Change a heading. Save. Watch the browser update in &lt;1 second.</p>
+    <div class="verify"><strong>Worked?</strong> HMR (hot module reload) is working.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 2</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-08">▶ Open VS Code here</a></div>
+  <h2>Routing — pages, dynamic routes, links</h2>
+  <div class="callout info"><span class="callout-label">App Router rule</span>Folders inside <code>src/app/</code> become URL paths. A <code>page.tsx</code> file inside renders the page. Square brackets in folder names = dynamic params.</div>
+  <div class="step">
+    <h4>1. New route: <code>/about</code></h4>
+    <p class="do">In VS Code, create folder <code>src/app/about/</code>, then file <code>src/app/about/page.tsx</code>. Type:</p>
+    <pre><code>export default function AboutPage() {
+  return &lt;h1&gt;About me&lt;/h1&gt;;
+}</code></pre>
+    <p class="do">Visit <a href="http://localhost:3000/about" target="_blank">localhost:3000/about</a>.</p>
+  </div>
+  <div class="step">
+    <h4>2. Blog index <code>/blog</code></h4>
+    <p class="do">Create <code>src/app/blog/page.tsx</code>. Type:</p>
+    <pre><code>import Link from "next/link";
+
+export default function BlogIndex() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Blog&lt;/h1&gt;
+      &lt;ul&gt;
+        &lt;li&gt;&lt;Link href="/blog/post-1"&gt;Post 1&lt;/Link&gt;&lt;/li&gt;
+        &lt;li&gt;&lt;Link href="/blog/post-2"&gt;Post 2&lt;/Link&gt;&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. Dynamic route <code>/blog/[slug]</code></h4>
+    <p class="do">Create folder <code>src/app/blog/[slug]/</code>, then file <code>src/app/blog/[slug]/page.tsx</code>. Type:</p>
+    <pre><code>export default async function PostPage({ params }: { params: Promise&lt;{ slug: string }&gt; }) {
+  const { slug } = await params;
+  return &lt;h1&gt;Post: {slug}&lt;/h1&gt;;
+}</code></pre>
+    <p class="do">Visit <code>/blog/post-1</code> — see the slug rendered.</p>
+    <div class="verify"><strong>Worked?</strong> All four routes work, links don't cause full reloads.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 3</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-08">▶ Open VS Code here</a></div>
+  <h2>Layouts (shared UI)</h2>
+  <div class="step">
+    <h4>1. Add a global header in the root layout</h4>
+    <p class="do">Open <code>src/app/layout.tsx</code>. Inside <code>&lt;body&gt;</code>, add a header above <code>{children}</code>:</p>
+    <pre><code>&lt;header className="border-b p-4 mb-4"&gt;
+  &lt;nav className="flex gap-4"&gt;
+    &lt;a href="/"&gt;Home&lt;/a&gt;
+    &lt;a href="/about"&gt;About&lt;/a&gt;
+    &lt;a href="/blog"&gt;Blog&lt;/a&gt;
+  &lt;/nav&gt;
+&lt;/header&gt;</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Blog-only sidebar layout</h4>
+    <p class="do">Create <code>src/app/blog/layout.tsx</code>. Type:</p>
+    <pre><code>export default function BlogLayout({ children }: { children: React.ReactNode }) {
+  return (
+    &lt;div className="flex gap-6 p-4"&gt;
+      &lt;aside className="w-48 border-r pr-4"&gt;
+        Blog sidebar (only on /blog/* pages)
+      &lt;/aside&gt;
+      &lt;main className="flex-1"&gt;{children}&lt;/main&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+    <div class="verify"><strong>Worked?</strong> Sidebar shows on <code>/blog</code> and <code>/blog/post-1</code>, not on <code>/about</code>.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 4</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-08">▶ Open VS Code here</a></div>
+  <h2>Server vs Client components</h2>
+  <div class="callout info"><span class="callout-label">The rule</span>Everything is a Server Component by default — runs on the server, can fetch data, can read files, but can't use <code>useState</code> or click handlers. Add <code>"use client"</code> at the top to opt into the client (with state, effects, browser APIs).</div>
+  <div class="step">
+    <h4>1. A Client Component: <code>Counter.tsx</code></h4>
+    <p class="do">Create folder <code>src/components/</code>, then file <code>src/components/Counter.tsx</code>. Type:</p>
+    <pre><code>"use client";
+
+import { useState } from "react";
+
+export default function Counter() {
+  const [count, setCount] = useState(0);
+  return (
+    &lt;button onClick={() =&gt; setCount(count + 1)} className="border px-4 py-2 rounded"&gt;
+      Count: {count}
+    &lt;/button&gt;
+  );
+}</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Use it on the homepage</h4>
+    <p class="do">Edit <code>src/app/page.tsx</code>:</p>
+    <pre><code>import Counter from "@/components/Counter";
+
+export default function Home() {
+  return (
+    &lt;main className="p-4"&gt;
+      &lt;h1 className="text-3xl font-bold"&gt;Home&lt;/h1&gt;
+      &lt;Counter /&gt;
+    &lt;/main&gt;
+  );
+}</code></pre>
+    <div class="verify"><strong>Worked?</strong> Click the button — count increments in the browser. Try removing <code>"use client"</code> from Counter.tsx — observe the runtime error explaining why.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 5</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-08">▶ Open VS Code here</a></div>
+  <h2>Data fetching in Server Components</h2>
+  <div class="step">
+    <h4>1. <code>/posts</code> — fetch a list</h4>
+    <p class="do">Create <code>src/app/posts/page.tsx</code>. Type:</p>
+    <pre><code>type Post = { id: number; title: string };
+
+export default async function Posts() {
+  const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
+    next: { revalidate: 60 }
+  });
+  const posts: Post[] = await res.json();
+  return (
+    &lt;ul className="p-4 space-y-2"&gt;
+      {posts.slice(0, 10).map(p =&gt; (
+        &lt;li key={p.id}&gt;
+          &lt;a href={`/posts/${p.id}`} className="underline"&gt;{p.title}&lt;/a&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}</code></pre>
+    <p style="font-size:13px;color:var(--fg-muted);"><code>revalidate: 60</code> means Next caches the response for 60 seconds before re-fetching.</p>
+  </div>
+  <div class="step">
+    <h4>2. <code>/posts/[id]</code> — single post</h4>
+    <p class="do">Create <code>src/app/posts/[id]/page.tsx</code>. Type:</p>
+    <pre><code>export default async function Post({ params }: { params: Promise&lt;{ id: string }&gt; }) {
+  const { id } = await params;
+  const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`);
+  const post = await res.json();
+  return (
+    &lt;article className="p-4"&gt;
+      &lt;h1 className="text-2xl font-bold"&gt;{post.title}&lt;/h1&gt;
+      &lt;p className="mt-2"&gt;{post.body}&lt;/p&gt;
+    &lt;/article&gt;
+  );
+}</code></pre>
+    <div class="verify"><strong>Worked?</strong> <code>/posts</code> lists titles, clicking opens individual posts.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 6</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-08">▶ Open VS Code here</a></div>
+  <h2>Loading + error UI</h2>
+  <div class="step">
+    <h4>1. Loading skeleton</h4>
+    <p class="do">Create <code>src/app/posts/loading.tsx</code>. Type:</p>
+    <pre><code>export default function Loading() {
+  return &lt;p className="p-4 animate-pulse"&gt;Loading posts...&lt;/p&gt;;
+}</code></pre>
+    <p class="do">In <code>page.tsx</code> for posts, add an artificial delay just before the fetch to see it: <code>await new Promise(r =&gt; setTimeout(r, 1500));</code></p>
+  </div>
+  <div class="step">
+    <h4>2. Error boundary</h4>
+    <p class="do">Create <code>src/app/posts/error.tsx</code>. Type:</p>
+    <pre><code>"use client";
+
+export default function Error({ error, reset }: { error: Error; reset: () =&gt; void }) {
+  return (
+    &lt;div className="p-4"&gt;
+      &lt;h2 className="text-red-600"&gt;Something went wrong&lt;/h2&gt;
+      &lt;p&gt;{error.message}&lt;/p&gt;
+      &lt;button onClick={reset} className="border px-4 py-2 mt-2 rounded"&gt;Try again&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. Not-found</h4>
+    <p class="do">Create <code>src/app/posts/[id]/not-found.tsx</code>. Type:</p>
+    <pre><code>export default function NotFound() {
+  return &lt;p className="p-4"&gt;Post not found.&lt;/p&gt;;
+}</code></pre>
+    <p class="do">In the post page, before returning, add:</p>
+    <pre><code>if (!post.id) {
+  const { notFound } = await import("next/navigation");
+  notFound();
+}</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 7</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-08">▶ Open VS Code here</a></div>
+  <h2>Server Actions</h2>
+  <div class="callout info"><span class="callout-label">What's a Server Action?</span>A function marked <code>"use server"</code> that runs on the server but can be called from a client form. Replaces traditional API routes for most mutations.</div>
+  <div class="step">
+    <h4>1. Install Zod for validation</h4>
+    <pre><code>npm install zod</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Create <code>src/app/actions.ts</code></h4>
+    <pre><code>"use server";
+import { z } from "zod";
+import { revalidatePath } from "next/cache";
+
+const Schema = z.object({ title: z.string().min(3) });
+
+export async function createPost(formData: FormData) {
+  const parsed = Schema.parse({ title: formData.get("title") });
+  console.log("would save:", parsed);
+  revalidatePath("/posts");
+}</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. Use it from a form</h4>
+    <p class="do">Edit <code>src/app/posts/page.tsx</code> — add at the top:</p>
+    <pre><code>import { createPost } from "@/app/actions";</code></pre>
+    <p class="do">And in the JSX, add a form:</p>
+    <pre><code>&lt;form action={createPost} className="p-4 flex gap-2"&gt;
+  &lt;input name="title" className="border px-2 py-1" placeholder="Post title..." /&gt;
+  &lt;button type="submit" className="border px-4 py-1 rounded"&gt;Add&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+    <div class="verify"><strong>Worked?</strong> Submit the form. The console (where <code>npm run dev</code> is running) shows <code>would save: { title: "..." }</code>.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 8</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-08">▶ Open VS Code here</a></div>
+  <h2>Metadata + SEO</h2>
+  <div class="step">
+    <h4>1. Static metadata</h4>
+    <p class="do">In any <code>page.tsx</code>, export:</p>
+    <pre><code>import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Posts",
+  description: "All posts in the blog",
+};</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Dynamic metadata for the post page</h4>
+    <pre><code>export async function generateMetadata({ params }: { params: Promise&lt;{ id: string }&gt; }): Promise&lt;Metadata&gt; {
+  const { id } = await params;
+  const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`);
+  const post = await res.json();
+  return { title: post.title };
+}</code></pre>
+    <div class="verify"><strong>Worked?</strong> View page source — each route has a unique <code>&lt;title&gt;</code> tag.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 9</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-08">▶ Open VS Code here</a></div>
+  <h2>Mini-project: blog with hardcoded posts</h2>
+  <div class="step">
+    <h4>1. Create the data file</h4>
+    <p class="do">Create <code>src/lib/posts.ts</code> in <code>study-nextjs</code>. Type:</p>
+    <pre><code>export type Post = { slug: string; title: string; date: string; body: string };
+
+export const posts: Post[] = [
+  { slug: "hello-world", title: "Hello, world", date: "2026-04-26", body: "First post." },
+  { slug: "second-post", title: "Second post", date: "2026-04-27", body: "Another one." },
+  { slug: "third-post",  title: "Third post",  date: "2026-04-28", body: "And another." },
+];</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Wire it into routes</h4>
+    <p class="do">Update <code>/blog/page.tsx</code> to map over <code>posts</code> from <code>@/lib/posts</code>. Update <code>/blog/[slug]/page.tsx</code> to find the post by slug and render its body. Add metadata to both.</p>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="9"> Block 9 complete</label>
+</section>
+
+<section class="mini-project">
+  <div class="block-head"><span class="block-num">Block 10 · Mini-project</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-08">▶ Open VS Code here</a></div>
+  <h2>Deploy to Vercel</h2>
+  <div class="step">
+    <h4>1. Polish the styling</h4>
+    <p class="do">Add a <code>&lt;footer&gt;</code> in the root layout. Use Tailwind classes for prose: <code>className="prose prose-slate max-w-none p-8"</code> on the article elements.</p>
+  </div>
+  <div class="step">
+    <h4>2. Push to GitHub</h4>
+    <p class="do">In the <code>study-nextjs</code> folder:</p>
+    <pre><code>git init
+git add .
+git commit -m "feat(nextjs): study blog with App Router"
+gh repo create study-nextjs --public --source=. --remote=origin --push</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. Deploy on Vercel</h4>
+    <p class="do">Open <a href="https://vercel.com/new" target="_blank">vercel.com/new</a> in Chrome → import the <code>study-nextjs</code> repo → click Deploy. Wait 30 seconds.</p>
+    <div class="verify"><strong>Worked?</strong> A <code>study-nextjs-*.vercel.app</code> URL is live with your blog. Visit it.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="10"> Block 10 complete</label>
+</section>
+
+<div class="footer-cta"><strong>Done? Tell Claude.</strong></div>
+</main>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
+const slug='08-nextjs';
+document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb)=>{const key=`progress.${slug}.${cb.dataset.block}`;cb.checked=localStorage.getItem(key)==='1';cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');updateProgress();});});
+function updateProgress(){const all=document.querySelectorAll('input[type="checkbox"][data-block]');const done=[...all].filter(c=>c.checked).length;document.querySelector('.progress-fill').style.width=`${(done/all.length)*100}%`;}
+updateProgress();
+document.querySelectorAll('pre').forEach((pre)=>{const code=pre.querySelector('code');if(!code)return;const btn=document.createElement('button');btn.className='copy-btn';btn.type='button';btn.textContent='Copy';btn.addEventListener('click',async(e)=>{e.preventDefault();try{await navigator.clipboard.writeText(code.innerText);}catch{const ta=document.createElement('textarea');ta.value=code.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}btn.textContent='Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);});pre.appendChild(btn);});
+</script></body></html>

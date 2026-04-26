@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 14 — Python APIs (FastAPI) · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>.step{margin:16px 0 22px;padding:16px 18px;background:var(--card-soft);border-radius:10px;border-left:3px solid var(--accent);}.step h4{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--fg);}.step .what,.step .why{color:var(--fg-soft);font-size:14px;margin:0 0 8px;}.step .why{color:var(--fg-muted);font-size:13px;font-style:italic;}.step .do{font-size:13px;color:var(--fg-soft);margin:8px 0 6px;font-weight:600;}.step .verify{margin-top:12px;padding:10px 14px;background:var(--success-soft);border-radius:8px;color:var(--success-fg);font-size:13px;}.launcher{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:20px 0 32px;}.launcher a{display:flex;flex-direction:column;padding:14px 18px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-fg);text-decoration:none;font-weight:600;}.launcher a small{font-weight:400;font-size:12px;color:var(--fg-soft);margin-top:4px;}</style>
+</head><body><main>
+
+<nav class="nav"><a href="13-fastai-prep.html">← Worksheet 13</a><span style="color:var(--fg-muted)">Worksheet 14 of 17</span><a href="15-rag.html">Next: RAG →</a></nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>Python APIs &amp; FastAPI</h1>
+<p class="meta"><span>14 focus blocks</span><span>~7 hours total</span><span>Phase 5 prep — MKT-02</span><span>Reference: <a href="https://fastapi.tiangolo.com/tutorial/" target="_blank">FastAPI tutorial</a></span></p>
+<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+
+<div class="callout info"><span class="callout-label">Why FastAPI?</span>FastAPI is the most popular Python web framework for building APIs. It uses type hints to validate inputs, auto-generates Swagger docs, and supports async natively. ~55% of UK junior AI-product postings list FastAPI/Flask. Mini-project here is the AI summariser — your MKT-02 prototype.</div>
+
+<p class="lead">Mini-project: a streaming AI summariser API on FastAPI. Foundation for the MKT-02 deliverable.</p>
+
+<h2>Architecture you'll build</h2>
+<div class="mermaid">
+flowchart LR
+    Browser[Next.js<br/>frontend] -->|HTTP| API[FastAPI]
+    API -->|HTTP| LLM[Gemini]
+    LLM -.stream.-> API
+    API -.SSE.-> Browser
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Click <strong>Open VS Code here</strong> to launch VS Code on this worksheet's folder. The "terminal" or "PowerShell" referred to throughout is <strong>VS Code's integrated terminal panel</strong> — open it via <strong>View → Terminal</strong>. No separate window needed.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-14">▶ Open VS Code here<small>opens VS Code on <code>14-python-apis</code>.</small></a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/14-python-apis/">Open the folder in Explorer</a>
+</div>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 1</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-14">▶ Open VS Code here</a></div>
+  <h2>Setup</h2>
+  <div class="step">
+    <h4>1. New venv + install packages</h4>
+    <pre><code>cd "C:\Users\David\Documents\AI Course\14-python-apis"
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install requests httpx fastapi "uvicorn[standard]" pydantic python-dotenv pydantic-settings</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Get a free Gemini API key</h4>
+    <p class="do">Open <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>, sign in with Google, click "Create API key". Copy.</p>
+    <p class="do">In VS Code, create <code>.env</code> in <code>14-python-apis</code>. Type:</p>
+    <pre><code>GEMINI_API_KEY=paste-your-key-here</code></pre>
+    <p class="do">Create <code>.gitignore</code>:</p>
+    <pre><code>.env
+.venv/
+__pycache__/</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 2</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-14">▶ Open VS Code here</a></div>
+  <h2>requests basics</h2>
+  <div class="step">
+    <h4>1. <code>01-get.py</code> — basic GET</h4>
+    <pre><code>import requests
+r = requests.get("https://httpbin.org/get")
+print(r.status_code)
+print(r.headers["content-type"])
+print(r.json())</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. <code>02-query-params.py</code></h4>
+    <pre><code>import requests
+r = requests.get("https://httpbin.org/get", params={"q": "python", "page": 2})
+print(r.json()["args"])</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. <code>03-post.py</code> — POST JSON</h4>
+    <pre><code>import requests
+r = requests.post("https://httpbin.org/post", json={"name": "Dave"})
+print(r.json()["json"])</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 3</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-14">▶ Open VS Code here</a></div>
+  <h2>Headers, errors, real LLM call</h2>
+  <div class="step">
+    <h4>1. <code>04-llm.py</code> — call Gemini</h4>
+    <pre><code>import os, requests
+from dotenv import load_dotenv
+
+load_dotenv()
+key = os.getenv("GEMINI_API_KEY")
+url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={key}"
+
+r = requests.post(url, json={"contents": [{"parts": [{"text": "Say hi in one short sentence."}]}]})
+r.raise_for_status()
+print(r.json()["candidates"][0]["content"]["parts"][0]["text"])</code></pre>
+    <div class="verify"><strong>Worked?</strong> Prints the model's reply.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 4</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-14">▶ Open VS Code here</a></div>
+  <h2>Async Python</h2>
+  <div class="step">
+    <h4>1. <code>05-async-basic.py</code></h4>
+    <pre><code>import asyncio
+
+async def hello():
+    print("hello async")
+
+asyncio.run(hello())</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. <code>06-gather.py</code> — concurrent fetches</h4>
+    <pre><code>import asyncio, time
+import httpx
+
+async def fetch(client, url):
+    r = await client.get(url)
+    return r.status_code
+
+async def main():
+    async with httpx.AsyncClient() as client:
+        urls = ["https://httpbin.org/delay/1"] * 3
+        start = time.time()
+        results = await asyncio.gather(*(fetch(client, u) for u in urls))
+        print(f"3 fetches in {time.time()-start:.2f}s ({results})")
+
+asyncio.run(main())</code></pre>
+    <div class="verify"><strong>Worked?</strong> 3 fetches complete in ~1s (concurrent), not ~3s.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 5</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-14">▶ Open VS Code here</a></div>
+  <h2>FastAPI — first endpoint</h2>
+  <div class="step">
+    <h4>Create <code>app/main.py</code></h4>
+    <p class="do">In VS Code, create folder <code>app</code>, then file <code>app/main.py</code>:</p>
+    <pre><code>from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def root():
+    return {"hello": "world"}
+
+@app.get("/items/{item_id}")
+def read_item(item_id: int):
+    return {"item_id": item_id}
+
+@app.get("/search")
+def search(q: str, limit: int = 10):
+    return {"q": q, "limit": limit}</code></pre>
+    <p class="do">Run with:</p>
+    <pre><code>uvicorn app.main:app --reload</code></pre>
+    <p class="do">Visit <a href="http://localhost:8000/docs" target="_blank">localhost:8000/docs</a> in Chrome.</p>
+    <div class="verify"><strong>Worked?</strong> Auto-generated Swagger UI shows your three endpoints.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 6</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-14">▶ Open VS Code here</a></div>
+  <h2>POST body + Pydantic validation</h2>
+  <div class="step">
+    <h4>Update <code>app/main.py</code> — add at the bottom:</h4>
+    <pre><code>from pydantic import BaseModel, Field
+
+class Item(BaseModel):
+    name: str
+    price: float = Field(gt=0)
+
+@app.post("/items")
+def create_item(item: Item):
+    return {"created": item}</code></pre>
+    <p class="do">Test in /docs — try a negative price.</p>
+    <div class="verify"><strong>Worked?</strong> Negative price returns 422 with a helpful error message.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 7</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-14">▶ Open VS Code here</a></div>
+  <h2>Response models + nested types</h2>
+  <div class="step">
+    <h4>Add to <code>app/main.py</code>:</h4>
+    <pre><code>from datetime import datetime
+
+class Address(BaseModel):
+    city: str
+    country: str
+
+class User(BaseModel):
+    name: str
+    email: str
+    password: str
+    address: Address
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+@app.post("/users", response_model=User, response_model_exclude={"password"})
+def create_user(user: User):
+    return user</code></pre>
+    <p class="do">Test in /docs — submit a user, response strips the password.</p>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 8</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-14">▶ Open VS Code here</a></div>
+  <h2>Dependency injection</h2>
+  <div class="step">
+    <h4>Add to <code>app/main.py</code>:</h4>
+    <pre><code>from fastapi import Depends, Header, HTTPException
+
+def get_settings():
+    return {"app_name": "AI Course"}
+
+@app.get("/info")
+def info(settings: dict = Depends(get_settings)):
+    return settings
+
+def verify_token(x_token: str = Header(...)):
+    if x_token != "secret":
+        raise HTTPException(status_code=401, detail="bad token")
+
+@app.get("/protected")
+def protected(_=Depends(verify_token)):
+    return {"ok": True}</code></pre>
+    <p class="do">Test /protected — fails without header, succeeds with <code>X-Token: secret</code>.</p>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 9</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-14">▶ Open VS Code here</a></div>
+  <h2>Streaming responses</h2>
+  <div class="step">
+    <h4>Add to <code>app/main.py</code>:</h4>
+    <pre><code>from fastapi.responses import StreamingResponse
+import time
+
+def slow_gen():
+    for i in range(5):
+        yield f"chunk {i}\n".encode()
+        time.sleep(0.5)
+
+@app.get("/stream")
+def stream():
+    return StreamingResponse(slow_gen(), media_type="text/plain")</code></pre>
+    <p class="do">Test:</p>
+    <pre><code>curl --no-buffer http://localhost:8000/stream</code></pre>
+    <div class="verify"><strong>Worked?</strong> Chunks appear over 2.5 seconds, not all at once.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="9"> Block 9 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 10</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-14">▶ Open VS Code here</a></div>
+  <h2>Errors, CORS, env config</h2>
+  <div class="step">
+    <h4>Add CORS + env validation</h4>
+    <p class="do">Update <code>app/main.py</code> to start with proper CORS + settings:</p>
+    <pre><code>from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    GEMINI_API_KEY: str
+    class Config:
+        env_file = ".env"
+
+settings = Settings()  # fails if env var missing
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}</code></pre>
+    <div class="verify"><strong>Worked?</strong> Removing GEMINI_API_KEY from <code>.env</code> makes the app fail to start. <code>/health</code> returns ok.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="10"> Block 10 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 11</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-14">▶ Open VS Code here</a></div>
+  <h2>Mini-project: <code>ai-summariser</code> skeleton</h2>
+  <div class="step">
+    <h4>1. New folder + structure</h4>
+    <pre><code>cd "C:\Users\David\Documents\AI Course\14-python-apis"
+mkdir ai-summariser
+cd ai-summariser
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install fastapi "uvicorn[standard]" pydantic-settings httpx python-dotenv</code></pre>
+    <p class="do">Copy your <code>.env</code> from the parent folder into <code>ai-summariser\</code>.</p>
+  </div>
+  <div class="step">
+    <h4>2. Create app skeleton</h4>
+    <p class="do">In VS Code, create <code>app/__init__.py</code> (empty), <code>app/schemas.py</code>, <code>app/llm.py</code>, <code>app/main.py</code>.</p>
+    <p class="do"><code>app/schemas.py</code>:</p>
+    <pre><code>from pydantic import BaseModel, Field
+
+class SummariseRequest(BaseModel):
+    text: str = Field(min_length=20)</code></pre>
+    <p class="do"><code>app/llm.py</code>:</p>
+    <pre><code>import httpx
+from typing import AsyncIterator
+
+async def stream_summary(text: str, api_key: str) -&gt; AsyncIterator[str]:
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&amp;key={api_key}"
+    payload = {"contents": [{"parts": [{"text": f"Summarise in 3 bullet points:\n\n{text}"}]}]}
+    async with httpx.AsyncClient(timeout=60) as client:
+        async with client.stream("POST", url, json=payload) as r:
+            async for line in r.aiter_lines():
+                if line.startswith("data: "):
+                    yield line[6:] + "\n"</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="11"> Block 11 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 12</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-14">▶ Open VS Code here</a></div>
+  <h2>Mini-project: streaming endpoint + CORS</h2>
+  <div class="step">
+    <h4>Create <code>app/main.py</code></h4>
+    <pre><code>from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from pydantic_settings import BaseSettings
+from app.schemas import SummariseRequest
+from app.llm import stream_summary
+
+class Settings(BaseSettings):
+    GEMINI_API_KEY: str
+    class Config: env_file = ".env"
+
+settings = Settings()
+app = FastAPI()
+app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000"], allow_methods=["*"], allow_headers=["*"])
+
+@app.get("/health")
+def health(): return {"status": "ok"}
+
+@app.post("/summarise")
+async def summarise(req: SummariseRequest):
+    return StreamingResponse(
+        stream_summary(req.text, settings.GEMINI_API_KEY),
+        media_type="text/event-stream"
+    )</code></pre>
+    <p class="do">Run + test:</p>
+    <pre><code>uvicorn app.main:app --reload</code></pre>
+    <pre><code>curl --no-buffer -X POST http://localhost:8000/summarise -H "Content-Type: application/json" -d "{\"text\":\"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\"}"</code></pre>
+    <div class="verify"><strong>Worked?</strong> Streamed bullets appear over a few seconds.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="12"> Block 12 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 13</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-14">▶ Open VS Code here</a></div>
+  <h2>Mini-project: tests + README</h2>
+  <div class="step">
+    <h4>1. Install pytest</h4>
+    <pre><code>pip install pytest httpx</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Create <code>tests/test_main.py</code></h4>
+    <pre><code>from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+def test_health():
+    r = client.get("/health")
+    assert r.status_code == 200
+    assert r.json() == {"status": "ok"}
+
+def test_summarise_validation():
+    r = client.post("/summarise", json={"text": "short"})
+    assert r.status_code == 422</code></pre>
+    <p class="do">Run:</p>
+    <pre><code>pytest -v</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. Write <code>README.md</code></h4>
+    <p class="do">Cover: how to run, an example curl, what's stubbed for future (auth, rate limit, persistence).</p>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="13"> Block 13 complete</label>
+</section>
+
+<section class="mini-project">
+  <div class="block-head"><span class="block-num">Block 14 · Mini-project</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-14">▶ Open VS Code here</a></div>
+  <h2>Ship to GitHub</h2>
+  <div class="step">
+    <h4>Push the repo</h4>
+    <pre><code>echo .env &gt; .gitignore
+echo .venv/ &gt;&gt; .gitignore
+echo __pycache__/ &gt;&gt; .gitignore
+git init
+git add .
+git commit -m "feat(python): ai-summariser FastAPI backend (worksheet 14)"
+gh repo create ai-summariser --public --source=. --remote=origin --push</code></pre>
+    <div class="verify"><strong>Worked?</strong> Live at <a href="https://github.com/Dave-Buckley/ai-summariser" target="_blank">github.com/Dave-Buckley/ai-summariser</a>. <strong>Foundation for MKT-02.</strong></div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="14"> Block 14 complete</label>
+</section>
+
+<div class="footer-cta"><strong>Done? Tell Claude.</strong></div>
+</main>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
+const slug='14-python-apis';
+document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb)=>{const key=`progress.${slug}.${cb.dataset.block}`;cb.checked=localStorage.getItem(key)==='1';cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');updateProgress();});});
+function updateProgress(){const all=document.querySelectorAll('input[type="checkbox"][data-block]');const done=[...all].filter(c=>c.checked).length;document.querySelector('.progress-fill').style.width=`${(done/all.length)*100}%`;}
+updateProgress();
+document.querySelectorAll('pre').forEach((pre)=>{const code=pre.querySelector('code');if(!code)return;const btn=document.createElement('button');btn.className='copy-btn';btn.type='button';btn.textContent='Copy';btn.addEventListener('click',async(e)=>{e.preventDefault();try{await navigator.clipboard.writeText(code.innerText);}catch{const ta=document.createElement('textarea');ta.value=code.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}btn.textContent='Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);});pre.appendChild(btn);});
+</script></body></html>

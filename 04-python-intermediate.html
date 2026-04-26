@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 04 — Python Intermediate · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .step { margin: 16px 0 22px; padding: 16px 18px; background: var(--card-soft); border-radius: 10px; border-left: 3px solid var(--accent); }
+  .step h4 { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--fg); }
+  .step .what, .step .why { color: var(--fg-soft); font-size: 14px; margin: 0 0 8px; }
+  .step .why { color: var(--fg-muted); font-size: 13px; font-style: italic; }
+  .step .do { font-size: 13px; color: var(--fg-soft); margin: 8px 0 6px; font-weight: 600; }
+  .step .verify { margin-top: 12px; padding: 10px 14px; background: var(--success-soft); border-radius: 8px; color: var(--success-fg); font-size: 13px; }
+  .launcher { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 20px 0 32px; }
+  .launcher a { display: flex; flex-direction: column; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent-fg); text-decoration: none; font-weight: 600; }
+  .launcher a small { font-weight: 400; font-size: 12px; color: var(--fg-soft); margin-top: 4px; }
+</style>
+</head>
+<body>
+<main>
+
+<nav class="nav"><a href="03-c-quickstart.html">← Worksheet 03</a><span style="color: var(--fg-muted)">Worksheet 04 of 17</span><a href="05-dsa-patterns.html">Next: DSA Patterns →</a></nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>Python Intermediate</h1>
+<p class="meta"><span>12 focus blocks</span><span>~6 hours total</span><span>Phase 2 prep</span><span>Reference: <a href="https://cs50.harvard.edu/python/2024/weeks/6/" target="_blank">CS50P Lectures 6-8</a></span></p>
+
+<div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+
+<div class="callout info">
+  <span class="callout-label">What this builds on</span>
+  Worksheet 02 covered the core syntax. This worksheet adds the patterns that make Python code professional: file I/O, error handling, type hints, classes (OOP), debugging, and a couple of "advanced" tools (decorators, generators) that show up in every fast.ai notebook.
+</div>
+
+<p class="lead">Mini-project at the end is a CLI task tracker — first real software you ship.</p>
+
+<h2>What this worksheet covers</h2>
+<div class="mermaid">
+flowchart TD
+    Root["<b>Python Intermediate</b>"]:::root
+    Root --> A["<b>Files</b><br/>open · csv · json · pathlib"]
+    Root --> B["<b>Errors</b><br/>try/except · raise · custom"]
+    Root --> C["<b>Type hints</b><br/>basic · Optional · mypy"]
+    Root --> D["<b>Debugging</b><br/>print · pdb · VS Code · logging"]
+    Root --> E["<b>OOP</b><br/>class · methods · inherit · property"]
+    Root --> F["<b>Decorators</b><br/>args/kwargs · timer"]
+    Root --> G["<b>Generators</b><br/>yield · lazy"]
+    classDef root fill:#4f46e5,color:#ffffff,stroke:#4f46e5,stroke-width:2px
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Click <strong>Open VS Code here</strong> to launch VS Code on this worksheet's folder. The "terminal" or "PowerShell" referred to throughout this worksheet is <strong>VS Code's integrated terminal panel</strong> — open it via <strong>View → Terminal</strong> at the top menu. Type git/python/curl commands there. No separate window needed.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-04">▶ Open VS Code here<small>opens VS Code on <code>04-python-intermediate</code>.</small></a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/04-python-intermediate/">Open the folder in Explorer<small>see your scripts and outputs.</small></a>
+</div>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 1</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-04">▶ Open VS Code here</a></div>
+  <h2>Setup</h2>
+  <div class="callout info"><span class="callout-label">Working folder</span>Everything in this worksheet happens in <code>C:\Users\David\Documents\AI Course\04-python-intermediate\</code>.</div>
+  <div class="step">
+    <h4>1. New venv + install packages</h4>
+    <p class="do">In VS Code's terminal:</p>
+    <pre><code>cd "C:\Users\David\Documents\AI Course\04-python-intermediate"
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install rich requests beautifulsoup4 mypy</code></pre>
+    <div class="verify"><strong>Worked?</strong> Prompt shows <code>(.venv)</code>. <code>pip list</code> shows all four packages.</div>
+  </div>
+  <div class="step">
+    <h4>2. Make two test data files</h4>
+    <p class="do">In VS Code, create <code>data.txt</code>. Type 5 lines:</p>
+    <pre><code>line one
+line two
+line three
+line four
+line five</code></pre>
+    <p class="do">Save. Then create <code>data.csv</code> with these lines:</p>
+    <pre><code>name,age,city
+Alice,30,London
+Bob,25,Sheffield
+Carol,40,Bristol
+Dave,32,Sheffield
+Eve,29,Manchester</code></pre>
+    <p style="font-size:12px; color: var(--fg-muted);">Save both in: <code>04-python-intermediate\</code>.</p>
+    <div class="verify"><strong>Worked?</strong> Both files visible in VS Code's left panel.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 2</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-04">▶ Open VS Code here</a></div>
+  <h2>File I/O basics</h2>
+  <div class="step">
+    <h4>1. <code>01-read.py</code> — read a file line by line</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>with open("data.txt") as f:
+    for i, line in enumerate(f, start=1):
+        print(f"{i}: {line.rstrip()}")</code></pre>
+    <p class="do">Run with <code>python 01-read.py</code>.</p>
+    <div class="verify"><strong>Worked?</strong> Five numbered lines from <code>data.txt</code>.</div>
+  </div>
+  <div class="step">
+    <h4>2. <code>02-write.py</code> — write a list to a file</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>fruits = ["apple", "banana", "cherry", "date", "elderberry"]
+with open("output.txt", "w") as f:
+    for fruit in fruits:
+        f.write(fruit + "\n")
+print("done")</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> A new file <code>output.txt</code> appears with the five fruits.</div>
+  </div>
+  <div class="step">
+    <h4>3. <code>03-csv.py</code> — read CSV as dicts</h4>
+    <p class="what"><strong>What:</strong> <code>csv.DictReader</code> turns each row into a dict using the header row as keys.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>import csv
+
+with open("data.csv") as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        print(row)</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Five dicts printed, each like <code>{'name': 'Alice', 'age': '30', 'city': 'London'}</code>.</div>
+  </div>
+  <div class="step">
+    <h4>4. <code>04-json.py</code> — round-trip a dict to JSON</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>import json
+
+data = {"users": ["Alice", "Bob"], "count": 2}
+with open("out.json", "w") as f:
+    json.dump(data, f, indent=2)
+
+with open("out.json") as f:
+    loaded = json.load(f)
+
+assert data == loaded
+print("equal!")</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints <code>equal!</code>. Open <code>out.json</code> — it's nicely indented.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 3</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-04">▶ Open VS Code here</a></div>
+  <h2>Error handling</h2>
+  <div class="mermaid">
+flowchart TD
+    A[try block] --> B{exception?}
+    B -->|no| F[finally]
+    B -->|ValueError| C[except ValueError]
+    B -->|FileNotFound| D[except FileNotFoundError]
+    B -->|other| E[propagates up]
+    C --> F
+    D --> F
+    F --> G[continue]
+</div>
+  <div class="step">
+    <h4>1. <code>05-try-except.py</code> — robust input</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>while True:
+    try:
+        n = int(input("Type a number: "))
+        break
+    except ValueError:
+        print("Not a number, try again.")
+print(f"You typed: {n}")</code></pre>
+    <p class="do">Run. Type letters first to see error handling, then a number.</p>
+    <div class="verify"><strong>Worked?</strong> Loops on bad input, accepts a number cleanly.</div>
+  </div>
+  <div class="step">
+    <h4>2. <code>06-multiple-excepts.py</code> — different errors, different responses</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>def open_safely(path):
+    try:
+        with open(path) as f:
+            print(f.read())
+    except FileNotFoundError:
+        print(f"No such file: {path}")
+    except PermissionError:
+        print(f"Can't read: {path}")
+
+open_safely("data.txt")
+open_safely("does-not-exist.txt")</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> First reads the file, second prints "No such file".</div>
+  </div>
+  <div class="step">
+    <h4>3. <code>07-raise-custom.py</code> — your own exception type</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>class TooBigError(Exception):
+    pass
+
+def check(n):
+    if n &gt; 100:
+        raise TooBigError(f"{n} is too big")
+    print(f"{n} ok")
+
+try:
+    check(50)
+    check(200)
+except TooBigError as e:
+    print(f"caught: {e}")</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> First call prints "50 ok", second is caught with "caught: 200 is too big".</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 4</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-04">▶ Open VS Code here</a></div>
+  <h2>Type hints</h2>
+  <div class="callout info"><span class="callout-label">What's a type hint?</span>Python doesn't enforce types at runtime, but you can annotate them in code so tools (mypy, your IDE) catch mistakes before you run. Hiring managers expect typed Python in production.</div>
+  <div class="step">
+    <h4>1. <code>08-basic-hints.py</code> — annotate three functions</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>def double(n: int) -&gt; int:
+    return n * 2
+
+def shout(msg: str) -&gt; str:
+    return msg.upper() + "!"
+
+def squares(upto: int) -&gt; list[int]:
+    return [i * i for i in range(upto)]
+
+print(double(5))
+print(shout("hello"))
+print(squares(5))</code></pre>
+    <p class="do">Run.</p>
+  </div>
+  <div class="step">
+    <h4>2. <code>09-optional.py</code> — values that can be None</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>from typing import Optional
+
+def find_user(uid: int) -&gt; Optional[str]:
+    users = {1: "Alice", 2: "Bob"}
+    return users.get(uid)
+
+print(find_user(1))
+print(find_user(99))</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> First prints "Alice", second prints "None".</div>
+  </div>
+  <div class="step">
+    <h4>3. Run mypy on your files</h4>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>mypy 08-basic-hints.py 09-optional.py</code></pre>
+    <div class="verify"><strong>Worked?</strong> Prints <code>Success: no issues found</code>. If errors, fix them.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 5</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-04">▶ Open VS Code here</a></div>
+  <h2>Debugging</h2>
+  <div class="step">
+    <h4>1. <code>10-print-debug.py</code> — find a bug with prints</h4>
+    <p class="do">Create. Type (the bug is on purpose):</p>
+    <pre><code>def total(nums):
+    s = 0
+    for i in range(len(nums) + 1):  # bug: off-by-one
+        s += nums[i]
+    return s
+
+print(total([1, 2, 3]))</code></pre>
+    <p class="do">Run. Crash. Now add a print inside the loop:</p>
+    <pre><code>def total(nums):
+    s = 0
+    for i in range(len(nums) + 1):
+        print(f"i={i}, len={len(nums)}")
+        s += nums[i]
+    return s
+
+print(total([1, 2, 3]))</code></pre>
+    <p class="do">Run again — you see <code>i=3, len=3</code> just before the crash. Fix it: change <code>+ 1</code> to nothing.</p>
+    <div class="verify"><strong>Worked?</strong> After the fix, prints <code>6</code> cleanly.</div>
+  </div>
+  <div class="step">
+    <h4>2. VS Code debugger</h4>
+    <p class="what"><strong>What:</strong> a proper visual debugger — set breakpoints, step through code line by line, inspect variables.</p>
+    <p class="do">Open <code>10-print-debug.py</code>. Click in the gutter (left of line numbers) on the line with <code>s += nums[i]</code> — a red dot appears (breakpoint). Press <kbd>F5</kbd>. Pick "Python File". Execution pauses at the breakpoint. Hover over <code>i</code>, <code>nums</code>, <code>s</code> to see their values. Press <kbd>F10</kbd> to step over.</p>
+    <div class="verify"><strong>Worked?</strong> You can pause execution, inspect values mid-run, step forward.</div>
+  </div>
+  <div class="step">
+    <h4>3. <code>11-logging.py</code> — replace prints with proper logging</h4>
+    <p class="why"><strong>Why:</strong> in real apps, sprinkled <code>print</code>s become noise. Logging lets you set levels (debug, info, warning, error) and filter.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>import logging
+logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
+
+def process(items):
+    logging.info(f"processing {len(items)} items")
+    for item in items:
+        logging.debug(f"item: {item}")
+    logging.warning("almost done")
+    return len(items)
+
+print(process(["a", "b", "c"]))</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Output shows DEBUG, INFO, WARNING tags before each message.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 6</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-04">▶ Open VS Code here</a></div>
+  <h2>OOP basics</h2>
+  <div class="mermaid">
+classDiagram
+    class Dog {
+        +str name
+        +int age
+        +str species$
+        +__init__(name, age)
+        +bark()
+        +__str__()
+    }
+    class Puppy {
+        +bark()
+    }
+    Dog <|-- Puppy : inherits
+</div>
+  <div class="step">
+    <h4>1. <code>12-class.py</code> — a class with constructor</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>class Dog:
+    def __init__(self, name: str, age: int) -&gt; None:
+        self.name = name
+        self.age = age
+
+d = Dog("Rex", 5)
+print(d.name, d.age)</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints <code>Rex 5</code>.</div>
+  </div>
+  <div class="step">
+    <h4>2. <code>13-methods.py</code> — instance method</h4>
+    <p class="do">Create (build on the Dog class). Type:</p>
+    <pre><code>class Dog:
+    def __init__(self, name: str, age: int) -&gt; None:
+        self.name = name
+        self.age = age
+
+    def bark(self) -&gt; str:
+        return f"{self.name} says woof"
+
+print(Dog("Rex", 5).bark())</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints <code>Rex says woof</code>.</div>
+  </div>
+  <div class="step">
+    <h4>3. <code>14-dunder.py</code> — make print(dog) useful</h4>
+    <p class="why"><strong>Why:</strong> by default <code>print(d)</code> shows something like <code>&lt;__main__.Dog object at 0x...&gt;</code>. Override <code>__str__</code> to make it readable.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>class Dog:
+    def __init__(self, name: str, age: int) -&gt; None:
+        self.name = name; self.age = age
+
+    def __str__(self) -&gt; str:
+        return f"{self.name} (age {self.age})"
+
+print(Dog("Rex", 5))</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints <code>Rex (age 5)</code>.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 7</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-04">▶ Open VS Code here</a></div>
+  <h2>Inheritance + property</h2>
+  <div class="step">
+    <h4>1. <code>15-inheritance.py</code> — Puppy inherits from Dog</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>class Dog:
+    def __init__(self, name: str, age: int) -&gt; None:
+        self.name = name; self.age = age
+
+    def bark(self) -&gt; str:
+        return f"{self.name} says woof"
+
+class Puppy(Dog):
+    def bark(self) -&gt; str:
+        return f"{self.name} says yip"
+
+p = Puppy("Buddy", 1)
+print(p.name)      # inherited
+print(p.bark())    # overridden</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints <code>Buddy</code> then <code>Buddy says yip</code>.</div>
+  </div>
+  <div class="step">
+    <h4>2. <code>16-property.py</code> — computed attribute</h4>
+    <p class="what"><strong>What:</strong> <code>@property</code> makes a method look like an attribute — call without parentheses.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>class Dog:
+    def __init__(self, name: str, age: int) -&gt; None:
+        self.name = name; self.age = age
+
+    @property
+    def description(self) -&gt; str:
+        return f"{self.name}, age {self.age}"
+
+d = Dog("Rex", 5)
+print(d.description)   # no parens</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints <code>Rex, age 5</code> via property access.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 8</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-04">▶ Open VS Code here</a></div>
+  <h2>Decorators + *args/**kwargs</h2>
+  <div class="step">
+    <h4>1. <code>17-args-kwargs.py</code> — flexible arguments</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>def show(*args, **kwargs):
+    print("positional:", args)
+    print("keyword:", kwargs)
+
+show(1, 2, 3, name="Dave", age=32)</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Output shows positional as a tuple, keyword as a dict.</div>
+  </div>
+  <div class="step">
+    <h4>2. <code>18-timer-decorator.py</code> — your own decorator</h4>
+    <p class="why"><strong>Why:</strong> a decorator wraps a function with extra behaviour. Used in fastapi, pytest, fast.ai constantly.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>import time
+from functools import wraps
+
+def timer(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = fn(*args, **kwargs)
+        elapsed = time.time() - start
+        print(f"{fn.__name__} took {elapsed:.3f}s")
+        return result
+    return wrapper
+
+@timer
+def slow_add(a, b):
+    time.sleep(1)
+    return a + b
+
+print(slow_add(2, 3))</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints <code>slow_add took 1.001s</code> then <code>5</code>.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 9</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-04">▶ Open VS Code here</a></div>
+  <h2>Generators</h2>
+  <div class="callout info"><span class="callout-label">What's a generator?</span>A function that <code>yield</code>s values one at a time instead of returning a full list. Memory-efficient for huge sequences. fast.ai DataLoaders are generators.</div>
+  <div class="step">
+    <h4>1. <code>19-yield.py</code> — count-up generator</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>def count_up(n):
+    for i in range(n):
+        yield i * i
+
+for value in count_up(5):
+    print(value)</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints 0, 1, 4, 9, 16. Each one was generated lazily.</div>
+  </div>
+  <div class="step">
+    <h4>2. <code>20-gen-expr.py</code> — generator expression</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>squares = (x * x for x in range(10))
+print(type(squares))
+print(sum(squares))</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Type is <code>generator</code>, sum is 285.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="9"> Block 9 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 10</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-04">▶ Open VS Code here</a></div>
+  <h2>Webscraping preview</h2>
+  <div class="step">
+    <h4>1. <code>21-requests.py</code> — fetch JSON</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>import requests
+
+r = requests.get("https://httpbin.org/json")
+print(r.status_code)
+print(r.json())</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Status 200, JSON dict printed.</div>
+  </div>
+  <div class="step">
+    <h4>2. <code>22-bs4.py</code> — parse HTML</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>import requests
+from bs4 import BeautifulSoup
+
+html = requests.get("https://example.com").text
+soup = BeautifulSoup(html, "html.parser")
+for h1 in soup.find_all("h1"):
+    print(h1.get_text())</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints "Example Domain".</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="10"> Block 10 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 11</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-04">▶ Open VS Code here</a></div>
+  <h2>Mini-project setup: <code>task-tracker.py</code></h2>
+  <div class="step">
+    <h4>1. Create <code>task-tracker.py</code></h4>
+    <p class="do">In VS Code: New File → <code>task-tracker.py</code>. Type:</p>
+    <pre><code>from datetime import datetime
+import json
+from pathlib import Path
+
+TASKS_FILE = Path("tasks.json")
+
+class Task:
+    def __init__(self, id: int, title: str, done: bool = False) -&gt; None:
+        self.id = id
+        self.title = title
+        self.created_at = datetime.now().isoformat()
+        self.done = done
+
+    def __str__(self) -&gt; str:
+        check = "[x]" if self.done else "[ ]"
+        return f"{check} {self.id}: {self.title}"
+
+def load_tasks() -&gt; list[Task]:
+    if not TASKS_FILE.exists():
+        return []
+    raw = json.loads(TASKS_FILE.read_text())
+    return [Task(t["id"], t["title"], t["done"]) for t in raw]
+
+def save_tasks(tasks: list[Task]) -&gt; None:
+    raw = [{"id": t.id, "title": t.title, "done": t.done} for t in tasks]
+    TASKS_FILE.write_text(json.dumps(raw, indent=2))</code></pre>
+    <p class="do">Save.</p>
+  </div>
+  <div class="step">
+    <h4>2. Test load/save</h4>
+    <p class="do">At the bottom of the file, add:</p>
+    <pre><code>if __name__ == "__main__":
+    tasks = load_tasks()
+    if not tasks:
+        tasks.append(Task(1, "test task"))
+        save_tasks(tasks)
+    for t in tasks:
+        print(t)</code></pre>
+    <p class="do">Run with <code>python task-tracker.py</code>. Run a second time.</p>
+    <div class="verify"><strong>Worked?</strong> First run creates the test task. Second run loads it. <code>tasks.json</code> visible in the file panel.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="11"> Block 11 complete</label>
+</section>
+
+<section class="mini-project">
+  <div class="block-head"><span class="block-num">Block 12 · Mini-project</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-04">▶ Open VS Code here</a></div>
+  <h2>CLI commands + ship</h2>
+  <div class="step">
+    <h4>1. Replace <code>__main__</code> with a CLI loop</h4>
+    <p class="do">Replace the <code>if __name__ == "__main__":</code> block with:</p>
+    <pre><code>if __name__ == "__main__":
+    tasks = load_tasks()
+    while True:
+        cmd = input("&gt; ").strip().split(maxsplit=1)
+        if not cmd: continue
+        if cmd[0] == "list":
+            for t in tasks: print(t)
+        elif cmd[0] == "add" and len(cmd) == 2:
+            new_id = max((t.id for t in tasks), default=0) + 1
+            tasks.append(Task(new_id, cmd[1]))
+            save_tasks(tasks)
+            print(f"added: {tasks[-1]}")
+        elif cmd[0] == "done" and len(cmd) == 2:
+            tid = int(cmd[1])
+            for t in tasks:
+                if t.id == tid: t.done = True
+            save_tasks(tasks)
+        elif cmd[0] == "delete" and len(cmd) == 2:
+            tid = int(cmd[1])
+            tasks = [t for t in tasks if t.id != tid]
+            save_tasks(tasks)
+        elif cmd[0] == "quit":
+            break
+        else:
+            print("commands: list / add &lt;text&gt; / done &lt;id&gt; / delete &lt;id&gt; / quit")</code></pre>
+    <p class="do">Save. Run.</p>
+  </div>
+  <div class="step">
+    <h4>2. Try the full cycle</h4>
+    <p class="do">In the running app, type:</p>
+    <pre><code>add Buy milk
+add Finish worksheet 04
+list
+done 1
+list
+quit</code></pre>
+    <div class="verify"><strong>Worked?</strong> Adds, lists, marks done, persists across runs.</div>
+  </div>
+  <div class="step">
+    <h4>3. Type-check + ship</h4>
+    <pre><code>mypy task-tracker.py
+git init
+echo .venv/ &gt; .gitignore
+echo tasks.json &gt;&gt; .gitignore
+echo __pycache__/ &gt;&gt; .gitignore
+git add task-tracker.py .gitignore
+git commit -m "feat(python): task tracker (worksheet 04)"
+gh repo create python-task-tracker --public --source=. --remote=origin --push</code></pre>
+    <div class="verify"><strong>Worked?</strong> mypy passes, repo lives at <a href="https://github.com/Dave-Buckley/python-task-tracker" target="_blank">github.com/Dave-Buckley/python-task-tracker</a>. <strong>Counts as your 2nd Python artifact for FND-01.</strong></div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="12"> Block 12 complete</label>
+</section>
+
+<div class="footer-cta"><strong>Done? Tell Claude.</strong><p>Open Claude from the hub and say: "I've finished Worksheet 04."</p></div>
+
+</main>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
+  const slug = '04-python-intermediate';
+  document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb) => { const key = `progress.${slug}.${cb.dataset.block}`; cb.checked = localStorage.getItem(key) === '1'; cb.addEventListener('change', () => { localStorage.setItem(key, cb.checked ? '1' : '0'); updateProgress(); }); });
+  function updateProgress() { const all = document.querySelectorAll('input[type="checkbox"][data-block]'); const done = [...all].filter(c => c.checked).length; document.querySelector('.progress-fill').style.width = `${(done/all.length)*100}%`; }
+  updateProgress();
+  document.querySelectorAll('pre').forEach((pre) => { const code = pre.querySelector('code'); if (!code) return; const btn = document.createElement('button'); btn.className='copy-btn'; btn.type='button'; btn.textContent='Copy'; btn.addEventListener('click', async (e) => { e.preventDefault(); try { await navigator.clipboard.writeText(code.innerText); } catch { const ta=document.createElement('textarea'); ta.value=code.innerText; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);} btn.textContent='Copied'; btn.classList.add('copied'); setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500); }); pre.appendChild(btn); });
+</script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Course — Today</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .hero {
+    background: linear-gradient(135deg, var(--accent-soft) 0%, var(--card) 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 32px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: -50%; right: -10%;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+    opacity: 0.12;
+    pointer-events: none;
+  }
+  .hero h1 { margin: 0 0 8px; font-size: 32px; }
+  .hero p { font-size: 15px; margin: 0; }
+
+  .quick-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin: 24px 0 40px;
+  }
+  .quick-card {
+    display: block;
+    padding: 20px 22px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--fg);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow);
+  }
+  .quick-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+  }
+  .quick-card .label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .quick-card h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0 0 10px;
+    color: var(--fg);
+    text-transform: none;
+    letter-spacing: -0.01em;
+  }
+  .quick-card p {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--fg-soft);
+    margin: 0;
+  }
+
+  .focus-card {
+    background: var(--card);
+    border: 2px solid var(--accent);
+    border-radius: 14px;
+    padding: 28px 30px;
+    margin: 12px 0 32px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+  }
+  .focus-card::before {
+    content: 'Right now';
+    position: absolute;
+    top: -12px;
+    left: 24px;
+    background: var(--accent);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 14px;
+    border-radius: 999px;
+  }
+  .focus-card h2 { margin: 0 0 8px; }
+  .focus-card .focus-meta { color: var(--fg-muted); font-size: 14px; margin-bottom: 16px; }
+  .focus-card ol { padding-left: 22px; color: var(--fg-soft); }
+  .focus-card ol li { margin-bottom: 8px; }
+  .focus-card .why {
+    margin-top: 18px;
+    padding: 12px 16px;
+    background: var(--card-soft);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--fg-soft);
+    border-left: 3px solid var(--fg-muted);
+  }
+
+  .course-list { display: grid; gap: 8px; margin: 16px 0; }
+  .course-item {
+    display: grid;
+    grid-template-columns: 50px 1fr auto auto;
+    gap: 16px;
+    align-items: center;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--fg);
+    text-decoration: none;
+    transition: all 0.15s;
+    font-size: 14px;
+  }
+  .course-item:hover {
+    border-color: var(--accent);
+    text-decoration: none;
+    background: var(--card-soft);
+  }
+  .course-item .num { font-weight: 700; color: var(--fg-muted); font-size: 13px; }
+  .course-item .name { font-weight: 600; }
+  .course-item.current { border-color: var(--accent); border-width: 2px; background: var(--accent-soft); }
+  .course-item.current .num { color: var(--accent); }
+  .course-item .blocks { color: var(--fg-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .course-item .pill {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 3px 10px; border-radius: 999px;
+  }
+  .course-item .pill.next { background: var(--accent); color: white; }
+  .course-item .pill.todo { background: var(--card-soft); color: var(--fg-muted); }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 24px 0;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    text-align: center;
+  }
+  .stat .num { font-size: 24px; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg-muted); margin-top: 4px; }
+</style>
+</head>
+<body>
+<main>
+
+<div class="hero">
+  <span class="kicker">AI Career Pivot</span>
+  <h1>Today's Course Steps</h1>
+  <p>Last refreshed 2026-04-26. Open this page each session, click straight through to whatever you need.</p>
+</div>
+
+<h2>Right now — do this</h2>
+<div class="focus-card">
+  <h2>Worksheet 01 — Git Hygiene · Block 1</h2>
+  <p class="focus-meta">~30 minutes · Setup + identity</p>
+  <ol>
+    <li>Click <a href="01-git-hygiene.html"><strong>Open today's worksheet</strong></a> below.</li>
+    <li>Confirm git is installed (<code>git --version</code> in PowerShell).</li>
+    <li>Set your global <code>user.name</code> and <code>user.email</code>.</li>
+    <li>Init a throwaway repo, commit, push to GitHub.</li>
+    <li>Tick the Block 1 checkbox on the worksheet page.</li>
+  </ol>
+  <div class="why">
+    <strong>Why git first, before Python:</strong> every later worksheet ends with "commit and push to GitHub". Doing this 4-hour worksheet first means zero friction for the next 16 worksheets.
+  </div>
+</div>
+
+<h2>Quick actions</h2>
+<div class="quick-grid">
+  <a class="quick-card" href="01-git-hygiene.html">
+    <div class="label">Today's worksheet</div>
+    <h3>Open Worksheet 01 — Git Hygiene</h3>
+    <p>Polished page with rendered diagrams, click-through checkboxes, and end-of-block checks. Read the next un-ticked block, do it, tick it.</p>
+  </a>
+  <a class="quick-card" href="file:///C:/Users/David/Documents/AI%20Course/01-git-hygiene/">
+    <div class="label">Practice folder</div>
+    <h3>Open today's code folder</h3>
+    <p>Documents → AI Course → 01-git-hygiene. Save practice scripts and notes here so they sit alongside the worksheet topic.</p>
+  </a>
+  <a class="quick-card" href="file:///C:/Users/David/Documents/AI%20Course/Tools/Claude%20Terminal.bat">
+    <div class="label">When stuck or done</div>
+    <h3>Open Claude</h3>
+    <p>Launches Claude inside your AI Career project. Use it for coaching, to log finished blocks, or to refresh this page for next session.</p>
+  </a>
+  <a class="quick-card" href="file:///C:/Users/David/Documents/AI%20Course/Tools/Study%20Terminal.bat">
+    <div class="label">Portfolio dev</div>
+    <h3>Portfolio terminal</h3>
+    <p>PowerShell inside your <code>davidbuckley</code> repo. Run <code>npm run study:start</code> for journal entries and daily portfolio commits.</p>
+  </a>
+  <a class="quick-card" href="https://davidbuckley.vercel.app" target="_blank">
+    <div class="label">Public site</div>
+    <h3>Live portfolio</h3>
+    <p>Opens davidbuckley.vercel.app in a new tab — the public version of your portfolio that hiring managers and visitors see.</p>
+  </a>
+  <a class="quick-card" href="file:///C:/Users/David/Documents/AI%20Course/">
+    <div class="label">Browse</div>
+    <h3>All worksheets</h3>
+    <p>Open the full AI Course folder. Use this if you want to peek ahead at later worksheets or jump back to revise.</p>
+  </a>
+</div>
+
+<h2>Progress overview</h2>
+<div class="stats">
+  <div class="stat"><div class="num">0</div><div class="label">Blocks done</div></div>
+  <div class="stat"><div class="num">158</div><div class="label">Total blocks</div></div>
+  <div class="stat"><div class="num">~79</div><div class="label">Hours of study</div></div>
+  <div class="stat"><div class="num">0</div><div class="label">Mini-projects shipped</div></div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+
+<h2>Course order</h2>
+<p style="color: var(--fg-muted); font-size: 14px;">17 pre-course worksheets, sequenced so each prepares you for the next. Each block is ~30 minutes. The pre-course scaffolding is ~80 hours; the actual courses (CS50, fast.ai, Andrew Ng) sit on top.</p>
+
+<div class="course-list">
+  <a class="course-item current" href="01-git-hygiene.html">
+    <span class="num">01</span><span class="name">Git Hygiene</span><span class="blocks">0 / 8</span><span class="pill next">Next</span>
+  </a>
+  <a class="course-item" href="02-python-basics.html">
+    <span class="num">02</span><span class="name">Python Basics</span><span class="blocks">0 / 10</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="03-c-quickstart.html">
+    <span class="num">03</span><span class="name">C Quickstart</span><span class="blocks">0 / 8</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="04-python-intermediate.html">
+    <span class="num">04</span><span class="name">Python Intermediate</span><span class="blocks">0 / 12</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="05-dsa-patterns.html">
+    <span class="num">05</span><span class="name">DSA Patterns</span><span class="blocks">0 / 12</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="06-web-fundamentals.html">
+    <span class="num">06</span><span class="name">Web Fundamentals</span><span class="blocks">0 / 8</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="07-typescript.html">
+    <span class="num">07</span><span class="name">TypeScript</span><span class="blocks">0 / 8</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="08-nextjs.html">
+    <span class="num">08</span><span class="name">Next.js</span><span class="blocks">0 / 10</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="09-sql-postgres.html">
+    <span class="num">09</span><span class="name">SQL &amp; Postgres</span><span class="blocks">0 / 8</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="10-vercel-ai-sdk.html">
+    <span class="num">10</span><span class="name">Vercel AI SDK</span><span class="blocks">0 / 8</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="11-python-data-science.html">
+    <span class="num">11</span><span class="name">Python Data Science</span><span class="blocks">0 / 14</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="12-ml-maths.html">
+    <span class="num">12</span><span class="name">ML Maths</span><span class="blocks">0 / 8</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="13-fastai-prep.html">
+    <span class="num">13</span><span class="name">fast.ai Prep</span><span class="blocks">0 / 8</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="14-python-apis.html">
+    <span class="num">14</span><span class="name">Python APIs &amp; FastAPI</span><span class="blocks">0 / 14</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="15-rag.html">
+    <span class="num">15</span><span class="name">RAG</span><span class="blocks">0 / 8</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="16-agents.html">
+    <span class="num">16</span><span class="name">Agents</span><span class="blocks">0 / 8</span><span class="pill todo">To do</span>
+  </a>
+  <a class="course-item" href="17-mlops-docker.html">
+    <span class="num">17</span><span class="name">MLOps &amp; Docker</span><span class="blocks">0 / 8</span><span class="pill todo">To do</span>
+  </a>
+</div>
+
+<div class="footer-cta">
+  <strong>This page refreshes when you open Claude.</strong>
+  <p>Tick blocks on the worksheet, then click <em>Open Claude</em> above and tell it which blocks you finished. The hub updates with what to do next session.</p>
+</div>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 01 — Git Hygiene · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .step { margin: 16px 0 22px; padding: 16px 18px; background: var(--card-soft); border-radius: 10px; border-left: 3px solid var(--accent); }
+  .step h4 { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--fg); }
+  .step .what { color: var(--fg-soft); font-size: 14px; margin: 0 0 8px; }
+  .step .why { color: var(--fg-muted); font-size: 13px; font-style: italic; margin: 0 0 12px; }
+  .step .do { font-size: 13px; color: var(--fg-soft); margin: 8px 0 6px; font-weight: 600; }
+  .step .verify { margin-top: 12px; padding: 10px 14px; background: var(--success-soft); border-radius: 8px; color: var(--success-fg); font-size: 13px; }
+  .step .verify strong { color: var(--success-fg); }
+  .replace { background: var(--warn-soft); color: var(--warn-fg); padding: 1px 6px; border-radius: 4px; font-weight: 600; font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+
+<nav class="nav">
+  <a href="index.html">← Course hub</a>
+  <span style="color: var(--fg-muted)">Worksheet 01 of 17</span>
+  <a href="02-python-basics.html">Next: Python Basics →</a>
+</nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>Git Hygiene</h1>
+<p class="meta">
+  <span>8 focus blocks</span>
+  <span>~4 hours total</span>
+  <span>Phase 2 prep</span>
+</p>
+
+<div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+
+<div class="callout info">
+  <span class="callout-label">What is Git, in one sentence?</span>
+  Git is a tool that keeps a saved history of every change you make to your code, on your computer. GitHub is a website that hosts copies of those histories online so you can share them, back them up, and collaborate. You'll use both together for the next 18 months.
+</div>
+
+<p class="lead">
+  Every later worksheet ends with "commit and push to GitHub". Spending 4 hours getting the Git muscle warm now means zero friction for the next 16 worksheets. By the end of this one you'll have made real branches, opened a real Pull Request, and know how to undo mistakes without losing work.
+</p>
+
+<style>
+  .launcher { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 20px 0 32px; }
+  .launcher a { display: flex; flex-direction: column; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent-fg); text-decoration: none; font-weight: 600; transition: transform 0.05s, box-shadow 0.15s; }
+  .launcher a:hover { box-shadow: var(--shadow); text-decoration: none; }
+  .launcher a:active { transform: translateY(1px); }
+  .launcher a small { font-weight: 400; font-size: 12px; color: var(--fg-soft); margin-top: 4px; }
+</style>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 8px;">Click <strong>Open PowerShell + VS Code</strong> once at the start of a session — both windows appear pre-pointed at the right folder. Every Block heading also has its own <strong>▶ Open VS Code here</strong> button if you prefer a fresh window per block. Every command block has a <strong>Copy</strong> button — click it, alt-tab to PowerShell, right-click to paste, press Enter.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-01">
+    ▶ Open PowerShell + VS Code here
+    <small>opens both pre-pointed at <code>01-git-hygiene</code>. Re-runnable any time you sit down to continue.</small>
+  </a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/01-git-hygiene/">
+    📁 Open the folder in Explorer
+    <small>see what files you've saved, drag-drop, or check progress visually.</small>
+  </a>
+</div>
+
+<h2>What this worksheet covers</h2>
+<div class="mermaid">
+flowchart TD
+    Root["<b>Git Hygiene</b>"]:::root
+    Root --> A["<b>Repos</b><br/>init · clone · remote"]
+    Root --> B["<b>Commits</b><br/>conventional · stage · diff"]
+    Root --> C["<b>Branches</b><br/>feature · switch · merge"]
+    Root --> D["<b>Pull Requests</b><br/>open · review · squash"]
+    Root --> E["<b>Recovery</b><br/>reset · revert · stash"]
+    Root --> F["<b>Cleanup</b><br/>gitignore · log"]
+    classDef root fill:#4f46e5,color:#ffffff,stroke:#4f46e5,stroke-width:2px
+</div>
+
+<h3>The flow you'll internalise</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Read this left to right starting at the rounded green "Start" node.</p>
+<div class="mermaid">
+flowchart LR
+    Start([Start: on main branch]):::start
+    Start -->|"1. create new branch"| B["feat/footer<br/><i>your new branch<br/>feat = type of work<br/>footer = thing you're building</i>"]
+    B -->|"2. make commits"| B
+    B -->|"3. push to GitHub"| C["remote copy on GitHub<br/><i>your work backed up online</i>"]
+    C -->|"4. open Pull Request"| D["review on github.com<br/><i>see all your changes in one place</i>"]
+    D -->|"5. squash merge<br/>+ delete branch"| Start
+    classDef start fill:#16a34a,color:#fff,stroke:#16a34a,stroke-width:2px
+</div>
+<div class="callout info" style="margin-top: 4px;">
+  <span class="callout-label">Branch name format</span>
+  Industry convention is <code>type/description</code>. <code>feat/</code> = new feature, <code>fix/</code> = bug fix, <code>refactor/</code> = code cleanup, <code>chore/</code> = housekeeping. The bit after the slash is whatever describes the change in 1–3 words: <code>feat/footer</code>, <code>fix/typo-in-readme</code>, <code>refactor/rename-component</code>.
+</div>
+
+<!-- BLOCK 1 -->
+<section class="block" id="block-1">
+  <div class="block-head">
+    <span class="block-num">Block 1</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-01">▶ Open VS Code here</a>
+  </div>
+  <h2>Setup + identity</h2>
+  <p>Tell Git who you are, then make your first practice repo on GitHub. By the end of this block your name shows up on a commit you pushed online.</p>
+
+  <div class="step">
+    <h4>1. Confirm Git is installed</h4>
+    <p class="what"><strong>What:</strong> check that Git exists on your computer.</p>
+    <p class="why"><strong>Why:</strong> if it's missing, every other step fails.</p>
+    <p class="do">In VS Code's terminal (View → Terminal), run:</p>
+    <pre><code>git --version</code></pre>
+    <div class="verify"><strong>Worked?</strong> You see something like <code>git version 2.53.0.windows.1</code>. If you see "command not found", install Git from <a href="https://git-scm.com/download/win" target="_blank">git-scm.com</a> and restart PowerShell.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. Set your global Git identity</h4>
+    <p class="what"><strong>What:</strong> tell Git the name and email to attach to every commit you make.</p>
+    <p class="why"><strong>Why:</strong> GitHub uses the email to link commits back to your account so they show up on your profile. "Global" means this applies to every Git project on this computer, not just one.</p>
+    <p class="do">Run these two lines (replace <span class="replace">your-github-email</span> with the address from your GitHub email settings — see note below):</p>
+    <pre><code>git config --global user.name "David Buckley"
+git config --global user.email "your-github-email@example.com"</code></pre>
+    <div class="callout info" style="margin-top:10px">
+      <span class="callout-label">Which email?</span>
+      Open <a href="https://github.com/settings/emails" target="_blank">github.com/settings/emails</a>. If "Keep my email addresses private" is ticked, GitHub shows a no-reply email like <code>12345678+Dave-Buckley@users.noreply.github.com</code> — use that. Otherwise use your primary email shown on the page.
+    </div>
+    <div class="verify"><strong>Worked?</strong> Run <code>git config --get user.name</code> — it prints "David Buckley". Then <code>git config --get user.email</code> — it prints the email you set.</div>
+  </div>
+
+  <div class="step">
+    <h4>3. Set the default branch name and editor</h4>
+    <p class="what"><strong>What:</strong> tell Git that new repos start with a branch called <code>main</code>, and to use VS Code when it needs to ask you for a longer message.</p>
+    <p class="why"><strong>Why:</strong> <code>main</code> is the modern industry default (older Git used <code>master</code>). VS Code is friendlier than the default editor for typing commit messages.</p>
+    <p class="do">Run these two lines:</p>
+    <pre><code>git config --global init.defaultBranch main
+git config --global core.editor "code --wait"</code></pre>
+    <div class="verify"><strong>Worked?</strong> No output means success. <code>git config --get init.defaultBranch</code> prints <code>main</code>.</div>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-label">Working folder for the rest of this worksheet</span>
+    Everything from here on happens inside <code>C:\Users\David\Documents\AI Course\01-git-hygiene\</code>. That folder already exists. We don't make any sub-folders — that folder <em>is</em> your practice Git repo.
+  </div>
+
+  <div class="step">
+    <h4>4. Move into the worksheet folder + open it in VS Code</h4>
+    <p class="do">In VS Code's terminal (View → Terminal), run these two lines:</p>
+    <pre><code>cd "C:\Users\David\Documents\AI Course\01-git-hygiene"
+code .</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);">The dot means "this folder". <code>code .</code> = "open this folder in VS Code".</p>
+    <div class="verify"><strong>Worked?</strong> VS Code opens with <code>01-GIT-HYGIENE</code> showing in the file panel on the left, with no files inside yet.</div>
+  </div>
+
+  <div class="step">
+    <h4>5. Turn the folder into a Git repository</h4>
+    <p class="what"><strong>What:</strong> tell Git "start tracking changes in this folder".</p>
+    <p class="do">Back in PowerShell (still inside the same folder):</p>
+    <pre><code>git init</code></pre>
+    <div class="verify"><strong>Worked?</strong> You see <code>Initialized empty Git repository in ...01-git-hygiene/.git/</code>. The third icon down on VS Code's left rail (Source Control) lights up.</div>
+  </div>
+
+  <div class="step">
+    <h4>6. Create your first file: <code>README.md</code></h4>
+    <p class="what"><strong>What:</strong> a README is the file GitHub displays when someone visits your repo's page. Every Git repo should have one.</p>
+    <p class="do" style="margin-bottom:8px;"><strong>In VS Code's file panel on the left:</strong></p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size:14px; margin: 0 0 12px;">
+      <li>Hover over the <strong>01-GIT-HYGIENE</strong> heading at the top of the panel.</li>
+      <li>Click the "New File" icon (paper with a plus on it) that appears next to it.</li>
+      <li>Type the filename exactly: <code>README.md</code> — press Enter.</li>
+      <li>The file opens in the editor. Type these two lines:
+        <pre style="margin-top:6px;"><code># Git Practice
+
+Practice repo for AI Course Worksheet 01.</code></pre>
+      </li>
+      <li>Save with <kbd>Ctrl</kbd> + <kbd>S</kbd>.</li>
+    </ol>
+    <p style="font-size: 12px; color: var(--fg-muted); margin: 0;">File name: <code>README.md</code> · Saved at: <code>C:\Users\David\Documents\AI Course\01-git-hygiene\README.md</code></p>
+    <div class="verify" style="margin-top: 10px;"><strong>Worked?</strong> <code>README.md</code> shows in the file panel. The Source Control icon shows a small "1" — Git noticed your new file.</div>
+  </div>
+
+  <div class="step">
+    <h4>7. Save the file as your first commit</h4>
+    <p class="what"><strong>What:</strong> "stage" the file (mark it ready), then "commit" it (save a snapshot with a message).</p>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>git add README.md
+git commit -m "chore: first commit"</code></pre>
+    <div class="verify"><strong>Worked?</strong> <code>git log --oneline</code> shows one line ending with <code>chore: first commit</code>.</div>
+  </div>
+
+  <div class="step">
+    <h4>8. Create a matching repo on GitHub + push your commit up</h4>
+    <p class="what"><strong>What:</strong> create a public GitHub repo, link it to this folder, push your commit — all in one command.</p>
+    <p class="why"><strong>Why:</strong> the local folder lives only on your computer. Pushing to GitHub gives you an online backup and a public URL.</p>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>gh repo create git-practice --public --source=. --remote=origin --push</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);">Plain English: "make a public GitHub repo named <code>git-practice</code>, link it to this folder (<code>--source=.</code>), call the link <code>origin</code>, push commits now."</p>
+    <div class="callout info" style="margin-top: 8px;">
+      <span class="callout-label">Folder name vs repo name</span>
+      Your local folder is <code>01-git-hygiene</code>. The GitHub repo will be called <code>git-practice</code>. They don't need to match — the folder name is how you find it on your computer; the GitHub repo name is what visitors see in the URL.
+    </div>
+    <div class="verify"><strong>Worked?</strong> Open <a href="https://github.com/Dave-Buckley/git-practice" target="_blank">github.com/Dave-Buckley/git-practice</a> in Chrome. You see your README.md rendered with "Git Practice" as a heading, and one commit titled "chore: first commit".</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<!-- BLOCK 2 -->
+<section class="block" id="block-2">
+  <div class="block-head">
+    <span class="block-num">Block 2</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-01">▶ Open VS Code here</a>
+  </div>
+  <h2>Conventional Commits</h2>
+  <p>Practice writing commit messages in the format the industry uses. Every commit message starts with a single-word prefix saying what type of change it is.</p>
+
+  <div class="callout info">
+    <span class="callout-label">Why this matters</span>
+    Hiring managers skim your <code>git log</code> to gauge how disciplined you are. A log full of "stuff", "fix", "more changes" reads as careless. Prefixed messages (<code>feat:</code>, <code>fix:</code>, <code>chore:</code>) look professional and let tools auto-generate changelogs. The format is from <a href="https://www.conventionalcommits.org" target="_blank">conventionalcommits.org</a>.
+  </div>
+
+  <div class="step">
+    <h4>1. Read the spec (5 min)</h4>
+    <p class="what"><strong>What:</strong> open the Conventional Commits website and skim the "Summary" section.</p>
+    <p class="why"><strong>Why:</strong> the rules are simple, you'll absorb them in one pass.</p>
+    <p class="do">Open <a href="https://www.conventionalcommits.org" target="_blank">conventionalcommits.org</a>. Read until "Examples". Stop there.</p>
+    <div class="verify"><strong>Worked?</strong> You can name what each prefix means: <code>feat</code>, <code>fix</code>, <code>chore</code>, <code>docs</code>, <code>refactor</code>.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. Make 5 real commits, one per prefix</h4>
+    <p class="what"><strong>What:</strong> in your <code>01-git-hygiene</code> folder, change 5 things, commit each with a different prefix.</p>
+    <p class="why"><strong>Why:</strong> muscle memory for "make a small change → commit it with a clear message".</p>
+    <p class="do" style="margin-bottom: 4px;">All file edits happen in VS Code. All commits happen in PowerShell. Work through these <strong>in order</strong>:</p>
+
+    <p class="do" style="margin-top: 14px; margin-bottom: 4px;"><strong>Commit 1 — <code>docs:</code> add a heading to README.md</strong></p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size: 14px; margin: 0;">
+      <li>In VS Code, open <code>README.md</code> from the left panel.</li>
+      <li>Add a new line at the very top: <code>## Project: Git Hygiene Practice</code></li>
+      <li>Save with <kbd>Ctrl</kbd>+<kbd>S</kbd>.</li>
+      <li>In VS Code's terminal (View → Terminal): <pre style="margin: 6px 0;"><code>git add README.md
+git commit -m "docs: add project heading"</code></pre></li>
+    </ol>
+
+    <p class="do" style="margin-top: 14px; margin-bottom: 4px;"><strong>Commit 2 — <code>feat:</code> create <code>hello.txt</code></strong></p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size: 14px; margin: 0;">
+      <li>In VS Code, hover over <strong>01-GIT-HYGIENE</strong>, click "New File", name it <code>hello.txt</code>.</li>
+      <li>Type one line inside: <code>Hello from worksheet 01</code></li>
+      <li>Save. File location: <code>C:\Users\David\Documents\AI Course\01-git-hygiene\hello.txt</code></li>
+      <li>In VS Code's terminal (View → Terminal): <pre style="margin: 6px 0;"><code>git add hello.txt
+git commit -m "feat: add hello text file"</code></pre></li>
+    </ol>
+
+    <p class="do" style="margin-top: 14px; margin-bottom: 4px;"><strong>Commit 3 — <code>fix:</code> typo in <code>hello.txt</code></strong></p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size: 14px; margin: 0;">
+      <li>In VS Code, open <code>hello.txt</code>. Change <code>Hello</code> to <code>Helloo</code>. Save.</li>
+      <li>Now fix it: change it back to <code>Hello</code>. Save.</li>
+      <li>In VS Code's terminal (View → Terminal): <pre style="margin: 6px 0;"><code>git add hello.txt
+git commit -m "fix: typo in hello.txt"</code></pre></li>
+    </ol>
+
+    <p class="do" style="margin-top: 14px; margin-bottom: 4px;"><strong>Commit 4 — <code>refactor:</code> change README into a bullet list</strong></p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size: 14px; margin: 0;">
+      <li>In VS Code, open <code>README.md</code>. Replace the description paragraph with:
+        <pre style="margin: 6px 0;"><code>- Practice repo for AI Course Worksheet 01
+- Tracks my git hygiene exercises</code></pre></li>
+      <li>Save.</li>
+      <li>In VS Code's terminal (View → Terminal): <pre style="margin: 6px 0;"><code>git add README.md
+git commit -m "refactor: switch readme to bullet list"</code></pre></li>
+    </ol>
+
+    <p class="do" style="margin-top: 14px; margin-bottom: 4px;"><strong>Commit 5 — <code>chore:</code> add a <code>.gitignore</code></strong></p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size: 14px; margin: 0;">
+      <li>In VS Code, hover over <strong>01-GIT-HYGIENE</strong>, click "New File", name it <code>.gitignore</code> (the dot at the start is important).</li>
+      <li>Type one line: <code>*.log</code></li>
+      <li>Save. File location: <code>C:\Users\David\Documents\AI Course\01-git-hygiene\.gitignore</code></li>
+      <li>In VS Code's terminal (View → Terminal): <pre style="margin: 6px 0;"><code>git add .gitignore
+git commit -m "chore: add gitignore"</code></pre></li>
+    </ol>
+
+    <p class="do" style="margin-top: 14px;"><strong>Push everything to GitHub:</strong></p>
+    <pre><code>git push</code></pre>
+    <div class="verify"><strong>Worked?</strong> <code>git log --oneline</code> shows 6 lines (1 original + 5 new). Refresh <a href="https://github.com/Dave-Buckley/git-practice" target="_blank">github.com/Dave-Buckley/git-practice</a> — same commits appear there.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<!-- BLOCK 3 -->
+<section class="block" id="block-3">
+  <div class="block-head">
+    <span class="block-num">Block 3</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-01">▶ Open VS Code here</a>
+  </div>
+  <h2>Branching basics</h2>
+
+  <div class="callout info">
+    <span class="callout-label">What's a branch?</span>
+    A branch is a parallel copy of your code where you can experiment without affecting the main version. Think of it like making a new save file in a video game so you can try a risky move — if it doesn't work, you can go back to the original save. <code>main</code> is the always-working version. <code>feat/about-page</code> is where you'd build a new "about" page without breaking anything yet.
+  </div>
+
+  <div class="step">
+    <h4>1. Make a new branch in PowerShell</h4>
+    <p class="do">Make sure you're inside <code>01-git-hygiene</code>, then:</p>
+    <pre><code>git checkout -b feat/about-page</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);">Plain English: "create a new branch called <code>feat/about-page</code> and switch to it." The <code>-b</code> means "create".</p>
+    <div class="verify"><strong>Worked?</strong> You see <code>Switched to a new branch 'feat/about-page'</code>. <code>git branch</code> shows two branches; the asterisk is on <code>feat/about-page</code>.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. Create <code>about.md</code> on this branch</h4>
+    <p class="do" style="margin-bottom:8px;">In VS Code:</p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size:14px; margin: 0 0 8px;">
+      <li>Hover over <strong>01-GIT-HYGIENE</strong>, click "New File".</li>
+      <li>Name: <code>about.md</code></li>
+      <li>Type:
+        <pre style="margin-top:6px;"><code># About
+
+This page describes who I am.</code></pre>
+      </li>
+      <li>Save with <kbd>Ctrl</kbd>+<kbd>S</kbd>.</li>
+    </ol>
+    <p style="font-size: 12px; color: var(--fg-muted);">File location: <code>C:\Users\David\Documents\AI Course\01-git-hygiene\about.md</code></p>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>git add about.md
+git commit -m "feat: add about page draft"</code></pre>
+    <div class="verify"><strong>Worked?</strong> <code>git log --oneline</code> on this branch shows your new commit at the top.</div>
+  </div>
+
+  <div class="step">
+    <h4>3. Watch the file disappear and reappear as you switch branches</h4>
+    <p class="why"><strong>Why this matters:</strong> proves that branches are isolated. <code>about.md</code> only exists on <code>feat/about-page</code> — switching to <code>main</code> hides it.</p>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>git switch main</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);">Look at the file panel in VS Code: <code>about.md</code> is gone.</p>
+    <pre><code>git switch feat/about-page</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);">It's back. Switch back to <code>main</code> for the next block:</p>
+    <pre><code>git switch main</code></pre>
+    <div class="verify"><strong>Worked?</strong> You watched <code>about.md</code> disappear and reappear in VS Code's file panel as you switched branches.</div>
+  </div>
+
+  <div class="step">
+    <h4>3. List branches and delete an unused one</h4>
+    <p class="do">Run:</p>
+    <pre><code>git branch</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);">You see all your branches; the current one has an asterisk.</p>
+    <p class="do">If you want to delete <code>feat/about-page</code> (don't yet — keep it for block 5), the command would be: <code>git branch -d feat/about-page</code>. Git will refuse if the branch has unmerged work.</p>
+    <div class="verify"><strong>Worked?</strong> You can list branches and you understand that <code>-d</code> is the delete flag.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<!-- BLOCK 4 -->
+<section class="block" id="block-4">
+  <div class="block-head">
+    <span class="block-num">Block 4</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-01">▶ Open VS Code here</a>
+  </div>
+  <h2>Merging and rebasing — what they really do</h2>
+  <p>Two ways to combine work from one branch into another. Both achieve the same final code, but produce different-looking history.</p>
+
+  <div class="mermaid">
+flowchart TB
+    subgraph merge[Merge - keeps the branch shape]
+      M1[main: A] --> M2[main: B]
+      M2 --> M3[merge commit]
+      M1 --> F1[feat: C] --> F2[feat: D] --> M3
+    end
+    subgraph rebase[Rebase - rewrites to look linear]
+      R1[A] --> R2[B] --> R3[C-prime] --> R4[D-prime]
+    end
+  </div>
+
+  <div class="step">
+    <h4>1. Try a merge</h4>
+    <p class="do">First, make a commit on <code>main</code> so the two branches diverge:</p>
+    <pre><code>git switch main</code></pre>
+    <p class="do" style="margin-bottom:8px;">In VS Code, create a new file:</p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size:14px; margin: 0 0 8px;">
+      <li>Hover over <strong>01-GIT-HYGIENE</strong>, click "New File".</li>
+      <li>Name: <code>status.txt</code></li>
+      <li>Type one line: <code>updated</code></li>
+      <li>Save.</li>
+    </ol>
+    <p style="font-size: 12px; color: var(--fg-muted);">File location: <code>C:\Users\David\Documents\AI Course\01-git-hygiene\status.txt</code></p>
+    <p class="do">In VS Code's terminal (View → Terminal), commit it on main, then switch to the feature branch and merge:</p>
+    <pre><code>git add status.txt
+git commit -m "chore: add status file"
+git switch feat/about-page
+git merge main</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);">Git creates a "merge commit" tying both lines of work together.</p>
+    <div class="verify"><strong>Worked?</strong> <code>git log --graph --oneline --all</code> shows two lines that come together at a merge commit.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. Try a rebase on a fresh branch</h4>
+    <p class="do">Switch back to main, make a new branch:</p>
+    <pre><code>git switch main
+git checkout -b feat/contact</code></pre>
+    <p class="do" style="margin-bottom:8px;">In VS Code, create a new file:</p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size:14px; margin: 0 0 8px;">
+      <li>Hover over <strong>01-GIT-HYGIENE</strong>, click "New File".</li>
+      <li>Name: <code>contact.md</code></li>
+      <li>Type one line: <code>Contact info goes here.</code></li>
+      <li>Save.</li>
+    </ol>
+    <p style="font-size: 12px; color: var(--fg-muted);">File location: <code>C:\Users\David\Documents\AI Course\01-git-hygiene\contact.md</code></p>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>git add contact.md
+git commit -m "feat: add contact page"
+git rebase main</code></pre>
+    <div class="verify"><strong>Worked?</strong> <code>git log --graph --oneline --all</code> on this branch shows one straight line — no branching graph.</div>
+  </div>
+
+  <div class="callout warn">
+    <span class="callout-label">Rule of thumb</span>
+    Use <strong>merge</strong> on shared branches (work other people pull from). Use <strong>rebase</strong> on your own local branches before opening a PR, to keep history clean. Never rebase a branch you've already pushed to GitHub if anyone else might have pulled it.
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<!-- BLOCK 5 -->
+<section class="block" id="block-5">
+  <div class="block-head">
+    <span class="block-num">Block 5</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-01">▶ Open VS Code here</a>
+  </div>
+  <h2>Pull Requests end-to-end</h2>
+  <div class="callout info">
+    <span class="callout-label">What's a Pull Request?</span>
+    A PR is a GitHub feature where you propose merging a branch into <code>main</code> via a webpage, optionally getting feedback first. Even working alone, doing changes via PRs creates a clean review trail that hiring managers love. The flow is: branch → commits → push → open PR on github.com → review → squash-merge → delete branch.
+  </div>
+
+  <div class="step">
+    <h4>1. Switch to main + make a new feature branch</h4>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>git switch main
+git pull
+git checkout -b feat/footer</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);"><code>git pull</code> downloads any new commits from GitHub before you start. <code>checkout -b</code> creates and switches to the new branch.</p>
+  </div>
+
+  <div class="step">
+    <h4>2. Create <code>footer.md</code> on the branch</h4>
+    <p class="do" style="margin-bottom:8px;">In VS Code:</p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size:14px; margin: 0 0 8px;">
+      <li>Hover over <strong>01-GIT-HYGIENE</strong>, click "New File".</li>
+      <li>Name: <code>footer.md</code></li>
+      <li>Type:
+        <pre style="margin-top:6px;"><code># Footer
+
+© 2026 David Buckley.</code></pre>
+      </li>
+      <li>Save.</li>
+    </ol>
+    <p style="font-size: 12px; color: var(--fg-muted);">File location: <code>C:\Users\David\Documents\AI Course\01-git-hygiene\footer.md</code></p>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>git add footer.md
+git commit -m "feat: add footer"
+git push -u origin feat/footer</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);">The <code>-u</code> means "remember this branch links to <code>origin/feat/footer</code>" so future <code>git push</code> calls know where to send. You only need <code>-u</code> the first time.</p>
+    <div class="verify"><strong>Worked?</strong> The push output ends with a URL like <code>https://github.com/Dave-Buckley/git-practice/pull/new/feat/footer</code>. Copy it.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. Open a PR on GitHub.com</h4>
+    <p class="do">Open the URL from step 1 in Chrome (or visit <code>github.com/Dave-Buckley/git-practice/pulls</code> and click "New pull request"). Fill in:</p>
+    <ul>
+      <li><strong>Title:</strong> "Add footer" (the conventional-commit message will be the title by default)</li>
+      <li><strong>Description:</strong>
+        <pre><code>## Summary
+- Adds footer.md with placeholder text
+
+## Test plan
+- [ ] File renders on the page</code></pre>
+      </li>
+    </ul>
+    <p class="do">Click <strong>Create pull request</strong>.</p>
+    <div class="verify"><strong>Worked?</strong> You're now on a page showing the PR with your changes.</div>
+  </div>
+
+  <div class="step">
+    <h4>3. Squash and merge</h4>
+    <p class="what"><strong>What:</strong> "Squash and merge" combines all the commits on your branch into ONE commit on main.</p>
+    <p class="why"><strong>Why:</strong> keeps <code>main</code>'s history clean — one PR = one entry in the log. The full commit-by-commit history is still preserved on the (now-closed) branch if you ever need it.</p>
+    <p class="do">Click the green <strong>Squash and merge</strong> button. Confirm. Then click <strong>Delete branch</strong> when offered.</p>
+    <div class="verify"><strong>Worked?</strong> The PR shows "Merged" with a purple badge.</div>
+  </div>
+
+  <div class="step">
+    <h4>4. Pull the merge back to your local main</h4>
+    <p class="do">Back in PowerShell:</p>
+    <pre><code>git switch main
+git pull
+git branch -d feat/footer</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);">"Pull" downloads the new commit on main from GitHub. Then you delete the local copy of the branch since it's already merged.</p>
+    <div class="verify"><strong>Worked?</strong> <code>git log --oneline</code> on main shows the new "Add footer" commit at the top.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<!-- BLOCK 6 -->
+<section class="block" id="block-6">
+  <div class="block-head">
+    <span class="block-num">Block 6</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-01">▶ Open VS Code here</a>
+  </div>
+  <h2>Recovery: undoing things safely</h2>
+  <div class="callout info">
+    <span class="callout-label">Why this block exists</span>
+    The single biggest source of "I lost my work" panic is misusing reset/revert/stash. Once you've used each one once, you'll never lose work to Git again.
+  </div>
+
+  <div class="step">
+    <h4>1. <code>reset --soft</code> — undo a commit but keep the changes</h4>
+    <p class="what"><strong>What:</strong> erase the most recent commit but leave the file changes ready to be re-committed.</p>
+    <p class="do" style="margin-bottom:8px;">First, make a throwaway commit. In VS Code, create a new file:</p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size:14px; margin: 0 0 8px;">
+      <li>Hover over <strong>01-GIT-HYGIENE</strong>, click "New File".</li>
+      <li>Name: <code>undo-me.txt</code></li>
+      <li>Type one line: <code>throwaway content</code></li>
+      <li>Save.</li>
+    </ol>
+    <p style="font-size: 12px; color: var(--fg-muted);">File location: <code>C:\Users\David\Documents\AI Course\01-git-hygiene\undo-me.txt</code></p>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>git add undo-me.txt
+git commit -m "chore: throwaway commit"
+git reset --soft HEAD~1</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);"><code>HEAD~1</code> means "the commit one before the current one". <code>reset --soft</code> moves the branch pointer back but leaves your file changes staged.</p>
+    <div class="verify"><strong>Worked?</strong> <code>git status</code> shows <code>undo-me.txt</code> as a staged change again. The commit is gone but the file isn't.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. <code>reset --hard</code> — DESTROY changes (local-only branches!)</h4>
+    <div class="callout warn">
+      <span class="callout-label">Danger</span>
+      <code>--hard</code> permanently throws away changes. Only use on branches you haven't pushed yet. Never use on <code>main</code> if you've ever shared it.
+    </div>
+    <p class="do">Recommit, then nuke it:</p>
+    <pre><code>git commit -m "chore: about to be destroyed"
+git reset --hard HEAD~1</code></pre>
+    <div class="verify"><strong>Worked?</strong> The file <code>undo-me.txt</code> is gone from your folder. <code>git status</code> shows nothing to commit.</div>
+  </div>
+
+  <div class="step">
+    <h4>3. <code>revert</code> — the SAFE way to undo a published commit</h4>
+    <p class="what"><strong>What:</strong> creates a NEW commit that undoes a previous one, without rewriting history.</p>
+    <p class="why"><strong>Why:</strong> if you've already pushed a bad commit to GitHub, this is how you remove its effect without messing up anyone else who pulled it.</p>
+    <p class="do">Find a commit hash from <code>git log</code>, then:</p>
+    <pre><code>git log --oneline -5
+git revert &lt;paste-a-hash&gt;</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);">A commit message editor opens — accept the default by closing it.</p>
+    <div class="verify"><strong>Worked?</strong> A new commit appears at the top of <code>git log</code> with "Revert" in the message.</div>
+  </div>
+
+  <div class="step">
+    <h4>4. <code>stash</code> — park changes temporarily</h4>
+    <p class="what"><strong>What:</strong> shelve uncommitted changes so you can switch branches without committing or losing them.</p>
+    <p class="do" style="margin-bottom:8px;">In VS Code, create a new file:</p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size:14px; margin: 0 0 8px;">
+      <li>Hover over <strong>01-GIT-HYGIENE</strong>, click "New File".</li>
+      <li>Name: <code>wip.txt</code></li>
+      <li>Type one line: <code>work in progress</code></li>
+      <li>Save.</li>
+    </ol>
+    <p style="font-size: 12px; color: var(--fg-muted);">File location: <code>C:\Users\David\Documents\AI Course\01-git-hygiene\wip.txt</code></p>
+    <p class="do">Now stash it, switch branch, come back, unstash:</p>
+    <pre><code>git add wip.txt
+git stash
+git switch main</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);">Look at the file panel — <code>wip.txt</code> is gone (parked in the stash).</p>
+    <pre><code>git switch -
+git stash pop</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);"><code>git switch -</code> means "switch back to the previous branch". <code>stash pop</code> restores your stashed changes.</p>
+    <div class="verify"><strong>Worked?</strong> <code>wip.txt</code> reappears in the file panel after <code>stash pop</code>.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<!-- BLOCK 7 -->
+<section class="block" id="block-7">
+  <div class="block-head">
+    <span class="block-num">Block 7</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-01">▶ Open VS Code here</a>
+  </div>
+  <h2>.gitignore, log, blame, diff</h2>
+
+  <div class="step">
+    <h4>1. Expand your <code>.gitignore</code></h4>
+    <p class="what"><strong>What:</strong> the file you created in Block 2 only has <code>*.log</code>. Real projects ignore more — secrets, dependency folders, OS junk. Update it now.</p>
+    <p class="why"><strong>Why:</strong> some files (passwords in <code>.env</code>, the huge <code>node_modules/</code> folder, OS metadata like <code>.DS_Store</code>) should never go into Git. <code>.gitignore</code> is the gatekeeper.</p>
+    <p class="do">In VS Code, open <code>.gitignore</code> from the file panel and replace its contents with:</p>
+    <pre><code>.env
+.venv/
+node_modules/
+*.log
+.DS_Store</code></pre>
+    <p style="font-size: 12px; color: var(--fg-muted);">File location: <code>C:\Users\David\Documents\AI Course\01-git-hygiene\.gitignore</code></p>
+    <p class="do">Save (<kbd>Ctrl</kbd>+<kbd>S</kbd>), then commit:</p>
+    <pre><code>git add .gitignore
+git commit -m "chore: expand gitignore"</code></pre>
+    <p class="do">Now test it. In VS Code, create a new file called <code>.env</code> with any text inside, save it.</p>
+    <div class="verify"><strong>Worked?</strong> Run <code>git status</code> — <code>.env</code> doesn't appear as untracked. Git is ignoring it. (Don't actually commit secrets.)</div>
+  </div>
+
+  <div class="step">
+    <h4>2. Read history with <code>log</code></h4>
+    <p class="do">Try these:</p>
+    <pre><code>git log --oneline -10
+git log --graph --oneline --all
+git log -p &lt;file&gt;        # shows every change to that file</code></pre>
+    <div class="verify"><strong>Worked?</strong> You can see history at different levels of detail.</div>
+  </div>
+
+  <div class="step">
+    <h4>3. Find who/when with <code>blame</code></h4>
+    <p class="what"><strong>What:</strong> shows the last commit that touched each line of a file.</p>
+    <p class="do">Run on your README:</p>
+    <pre><code>git blame README.md</code></pre>
+    <div class="verify"><strong>Worked?</strong> Each line is prefixed with a commit hash, your name, and a date.</div>
+  </div>
+
+  <div class="step">
+    <h4>4. See what changed with <code>diff</code></h4>
+    <p class="do">Edit any file (don't commit yet), then:</p>
+    <pre><code>git diff                # changes you haven't staged
+git add &lt;file&gt;
+git diff --staged       # changes that ARE staged but not committed
+git diff main..HEAD     # changes between main and current branch</code></pre>
+    <div class="verify"><strong>Worked?</strong> Each command shows different layers of pending changes.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<!-- BLOCK 8 — MINI PROJECT -->
+<section class="mini-project">
+  <div class="block-head">
+    <span class="block-num">Block 8 · Mini-project</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-portfolio">▶ Open VS Code on portfolio repo</a>
+  </div>
+  <h2>Make a real PR on your portfolio repo</h2>
+  <p>Apply everything to your live <code>davidbuckley</code> portfolio. This counts towards Phase 2 success criteria.</p>
+
+  <div class="step">
+    <h4>1. Open your portfolio repo in VS Code</h4>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>cd "C:\Users\David\AI Projects\Websites\davidbuckley"
+code .</code></pre>
+    <div class="verify"><strong>Worked?</strong> VS Code opens with <code>DAVIDBUCKLEY</code> as the project root.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. Pick something small but real to fix</h4>
+    <p class="what">Don't pick a big feature. Aim for something you can finish in 15 minutes. Browse your live site at <a href="https://davidbuckley.vercel.app" target="_blank">davidbuckley.vercel.app</a> and pick one of:</p>
+    <ul style="padding-left: 20px; color: var(--fg-soft); font-size: 14px;">
+      <li>A typo or awkward sentence in any text on the homepage, about page, or a project writeup</li>
+      <li>A footer that's missing a link to your GitHub or LinkedIn</li>
+      <li>An image that's missing alt-text (open the image's element in VS Code, look for <code>&lt;img ... alt=""&gt;</code>)</li>
+      <li>Spacing/padding that looks wrong on mobile (open Chrome DevTools, toggle device toolbar)</li>
+      <li>An outdated date in the about section</li>
+    </ul>
+    <p style="font-size: 13px; color: var(--fg-muted);">Note down: WHICH file you'll edit, WHAT change you'll make. Example: "edit <code>src/app/page.tsx</code>, change 'Sport Scientist' to 'PE teacher'".</p>
+  </div>
+
+  <div class="step">
+    <h4>3. Make a feature branch</h4>
+    <p class="do">In VS Code's terminal (View → Terminal) (still in the <code>davidbuckley</code> folder):</p>
+    <pre><code>git switch main
+git pull
+git checkout -b fix/typo-on-home</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);">Replace <code>typo-on-home</code> with 1–3 words describing your actual fix (no spaces, hyphens between words).</p>
+    <div class="verify"><strong>Worked?</strong> You see <code>Switched to a new branch 'fix/...'</code>.</div>
+  </div>
+
+  <div class="step">
+    <h4>4. Make your edit in VS Code, save, commit</h4>
+    <p class="do">Open the file you decided to edit (left panel, navigate to it, click). Make the change. Save with <kbd>Ctrl</kbd>+<kbd>S</kbd>.</p>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>git add .
+git commit -m "fix: typo on home page"</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);">Use a real description in the commit message. <code>git add .</code> stages all changed files.</p>
+  </div>
+
+  <div class="step">
+    <h4>5. Push the branch up to GitHub</h4>
+    <pre><code>git push -u origin fix/typo-on-home</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);">Use whatever branch name you actually used. The output ends with a URL — copy it.</p>
+  </div>
+
+  <div class="step">
+    <h4>6. Open the PR, review, squash and merge</h4>
+    <p class="do">Paste the URL into Chrome. On the PR page:</p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size:14px;">
+      <li>Title: pre-filled from your commit message — leave it.</li>
+      <li>Description: write
+        <pre style="margin: 6px 0;"><code>## Summary
+- &lt;one-line description of what you fixed&gt;
+
+## Test plan
+- [ ] Verified on davidbuckley.vercel.app after deploy</code></pre>
+      </li>
+      <li>Click <strong>Create pull request</strong>.</li>
+      <li>Click <strong>Squash and merge</strong>. Confirm. Click <strong>Delete branch</strong> when offered.</li>
+    </ol>
+  </div>
+
+  <div class="step">
+    <h4>7. Pull the merge to local main + verify Vercel deployed</h4>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>git switch main
+git pull</code></pre>
+    <p class="do">Wait 30–60 seconds for Vercel to redeploy. Open <a href="https://davidbuckley.vercel.app" target="_blank">davidbuckley.vercel.app</a> in Chrome. Hard refresh with <kbd>Ctrl</kbd>+<kbd>F5</kbd>.</p>
+    <div class="verify"><strong>Worked?</strong> Your fix is visible on the live site. The portfolio repo on GitHub now shows a closed PR in the merge history. <strong>This counts towards Phase 2 SC #3</strong> (PR-based merge history).</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<div class="footer-cta">
+  <strong>Done? Tell Claude.</strong>
+  <p>Open Claude from the hub and say: "I've finished Worksheet 01." Claude updates the master roadmap and the next-steps page.</p>
+</div>
+
+</main>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  // Always use light theme — diagrams sit on a white card regardless of page dark mode
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    themeVariables: {
+      primaryColor: '#eef2ff',
+      primaryTextColor: '#1e1b4b',
+      primaryBorderColor: '#4f46e5',
+      lineColor: '#475569',
+      secondaryColor: '#dbeafe',
+      tertiaryColor: '#fef3c7',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      fontSize: '14px',
+    }
+  });
+
+  const slug = '01-git-hygiene';
+  document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb) => {
+    const key = `progress.${slug}.${cb.dataset.block}`;
+    cb.checked = localStorage.getItem(key) === '1';
+    cb.addEventListener('change', () => {
+      localStorage.setItem(key, cb.checked ? '1' : '0');
+      updateProgress();
+    });
+  });
+  function updateProgress() {
+    const all = document.querySelectorAll('input[type="checkbox"][data-block]');
+    const done = [...all].filter(c => c.checked).length;
+    const pct = (done / all.length) * 100;
+    document.querySelector('.progress-fill').style.width = `${pct}%`;
+  }
+  updateProgress();
+
+  // Copy-to-clipboard buttons on every command block
+  document.querySelectorAll('pre').forEach((pre) => {
+    const code = pre.querySelector('code');
+    if (!code) return;
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const text = code.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+    });
+    pre.appendChild(btn);
+  });
+</script>
+</body>
+</html>

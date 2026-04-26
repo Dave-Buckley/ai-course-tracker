@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 16 — Agents · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>.step{margin:16px 0 22px;padding:16px 18px;background:var(--card-soft);border-radius:10px;border-left:3px solid var(--accent);}.step h4{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--fg);}.step .what,.step .why{color:var(--fg-soft);font-size:14px;margin:0 0 8px;}.step .why{color:var(--fg-muted);font-size:13px;font-style:italic;}.step .do{font-size:13px;color:var(--fg-soft);margin:8px 0 6px;font-weight:600;}.step .verify{margin-top:12px;padding:10px 14px;background:var(--success-soft);border-radius:8px;color:var(--success-fg);font-size:13px;}.launcher{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:20px 0 32px;}.launcher a{display:flex;flex-direction:column;padding:14px 18px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-fg);text-decoration:none;font-weight:600;}.launcher a small{font-weight:400;font-size:12px;color:var(--fg-soft);margin-top:4px;}</style>
+</head><body><main>
+
+<nav class="nav"><a href="15-rag.html">← Worksheet 15</a><span style="color:var(--fg-muted)">Worksheet 16 of 17</span><a href="17-mlops-docker.html">Next: MLOps & Docker →</a></nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>AI Agents</h1>
+<p class="meta"><span>8 focus blocks</span><span>~4 hours total</span><span>Phase 5 prep — DAI-02</span></p>
+<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+
+<div class="callout info"><span class="callout-label">What's an agent?</span>An LLM that picks actions from a tool palette in a loop until done. Compared to a single prompt, agents handle open-ended tasks: search the web, fetch a page, summarise it, decide what to do next. Mini-project: a research-assistant agent that uses 3 real tools.</div>
+
+<p class="lead">Mini-project: research-assistant agent that searches the web, fetches pages, summarises — streamed via FastAPI.</p>
+
+<h2>The agent loop</h2>
+<div class="mermaid">
+flowchart LR
+    A[User input] --> B[LLM picks<br/>tool or final answer]
+    B --> C{Tool call?}
+    C -->|yes| D[Execute tool] --> E[Append result] --> B
+    C -->|no| F[Final answer]
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Click <strong>Open VS Code here</strong> to launch VS Code on this worksheet's folder. The "terminal" referred to throughout is <strong>VS Code's integrated terminal panel</strong> — open it via <strong>View → Terminal</strong>. No separate window needed.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-16">▶ Open VS Code here<small>opens VS Code on <code>16-agents</code>.</small></a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/16-agents/">Open the folder in Explorer</a>
+</div>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 1</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-16">▶ Open VS Code here</a></div>
+  <h2>Setup</h2>
+  <div class="step">
+    <h4>Install</h4>
+    <pre><code>cd "C:\Users\David\Documents\AI Course\16-agents"
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install google-generativeai fastapi "uvicorn[standard]" python-dotenv requests beautifulsoup4 duckduckgo-search</code></pre>
+    <p class="do">Copy your <code>.env</code> with <code>GEMINI_API_KEY</code>. Add <code>.gitignore</code>.</p>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 2</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-16">▶ Open VS Code here</a></div>
+  <h2>Tools as functions</h2>
+  <div class="step">
+    <h4>Create <code>01-tools-manual.py</code></h4>
+    <pre><code>import os, json
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+def add_numbers(a: float, b: float) -&gt; float:
+    return a + b
+
+def get_weather(city: str) -&gt; dict:
+    return {"city": city, "temp_c": 12, "condition": "rain"}
+
+# Define schemas for the LLM
+tools = [
+    genai.protos.Tool(function_declarations=[
+        genai.protos.FunctionDeclaration(
+            name="add_numbers",
+            description="Add two numbers",
+            parameters=genai.protos.Schema(
+                type=genai.protos.Type.OBJECT,
+                properties={"a": genai.protos.Schema(type=genai.protos.Type.NUMBER),
+                           "b": genai.protos.Schema(type=genai.protos.Type.NUMBER)},
+                required=["a", "b"],
+            ),
+        ),
+        genai.protos.FunctionDeclaration(
+            name="get_weather",
+            description="Get weather for a city",
+            parameters=genai.protos.Schema(
+                type=genai.protos.Type.OBJECT,
+                properties={"city": genai.protos.Schema(type=genai.protos.Type.STRING)},
+                required=["city"],
+            ),
+        ),
+    ])
+]
+
+model = genai.GenerativeModel("gemini-2.5-flash-lite", tools=tools)
+chat = model.start_chat()
+response = chat.send_message("What's 12 + 7? And what's the weather in London?")
+for part in response.parts:
+    if part.function_call:
+        print("LLM wants to call:", part.function_call.name, dict(part.function_call.args))</code></pre>
+    <div class="verify"><strong>Worked?</strong> The LLM emits two function-call requests, one per tool.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 3</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-16">▶ Open VS Code here</a></div>
+  <h2>The agent loop</h2>
+  <div class="step">
+    <h4>Create <code>02-agent-loop.py</code></h4>
+    <pre><code>import os, datetime
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+def add_numbers(a, b): return float(a) + float(b)
+def get_weather(city): return {"city": city, "temp_c": 12, "condition": "rain"}
+def current_time(): return datetime.datetime.utcnow().isoformat()
+
+tool_fns = {"add_numbers": add_numbers, "get_weather": get_weather, "current_time": current_time}
+
+# Use auto function-calling - simpler than block 2
+model = genai.GenerativeModel("gemini-2.5-flash-lite", tools=list(tool_fns.values()))
+chat = model.start_chat(enable_automatic_function_calling=True)
+response = chat.send_message("What time is it now? Also tell me the weather in London.")
+print(response.text)</code></pre>
+    <div class="verify"><strong>Worked?</strong> Final answer mentions both the current time and London's weather.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 4</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-16">▶ Open VS Code here</a></div>
+  <h2>Failure handling + iteration cap</h2>
+  <div class="step">
+    <h4>Create <code>03-flaky.py</code></h4>
+    <pre><code>import random, os
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+def flaky_tool(query: str) -&gt; str:
+    """Sometimes fails, sometimes returns a result."""
+    if random.random() &lt; 0.5:
+        return "ERROR: temporary failure, please retry once"
+    return f"Result for {query}: success!"
+
+model = genai.GenerativeModel("gemini-2.5-flash-lite", tools=[flaky_tool])
+chat = model.start_chat(enable_automatic_function_calling=True)
+response = chat.send_message("Call flaky_tool with query='hello'. If it fails, retry.")
+print(response.text)</code></pre>
+    <div class="verify"><strong>Worked?</strong> The LLM handles transient failure by retrying or pivoting.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 5</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-16">▶ Open VS Code here</a></div>
+  <h2>Visible reasoning trace</h2>
+  <div class="step">
+    <h4>Create <code>04-trace.py</code></h4>
+    <pre><code>import os
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+def square(n: float) -&gt; float: return n * n
+def double(n: float) -&gt; float: return n * 2
+
+model = genai.GenerativeModel("gemini-2.5-flash-lite", tools=[square, double])
+chat = model.start_chat()
+response = chat.send_message("What's the square of 7, then double it?")
+
+for entry in chat.history:
+    print(f"-- {entry.role} --")
+    for part in entry.parts:
+        if hasattr(part, "function_call") and part.function_call.name:
+            print(f"   CALL: {part.function_call.name}({dict(part.function_call.args)})")
+        elif hasattr(part, "function_response") and part.function_response.name:
+            print(f"   RESULT: {dict(part.function_response.response)}")
+        elif part.text:
+            print(f"   TEXT: {part.text}")</code></pre>
+    <div class="verify"><strong>Worked?</strong> You see a clear thought-action-observation chain.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 6</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-16">▶ Open VS Code here</a></div>
+  <h2>Streaming + cancellation</h2>
+  <div class="step">
+    <h4>Create <code>05-streaming.py</code></h4>
+    <pre><code>import os
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+model = genai.GenerativeModel("gemini-2.5-flash-lite")
+response = model.generate_content("Tell me a 100-word story about a brave penguin.", stream=True)
+for chunk in response:
+    print(chunk.text, end="", flush=True)
+print()</code></pre>
+    <div class="verify"><strong>Worked?</strong> Text appears word-by-word as it's generated.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 7</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-16">▶ Open VS Code here</a></div>
+  <h2>Real tools: web search + fetch</h2>
+  <div class="step">
+    <h4>Create <code>06-real-tools.py</code></h4>
+    <pre><code>import os
+from duckduckgo_search import DDGS
+import requests
+from bs4 import BeautifulSoup
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+def web_search(query: str) -&gt; list[dict]:
+    """Search the web. Returns list of {title, url, snippet}."""
+    return list(DDGS().text(query, max_results=3))
+
+def fetch_page(url: str) -&gt; str:
+    """Fetch a URL and return cleaned text (first 3000 chars)."""
+    html = requests.get(url, timeout=10).text
+    text = BeautifulSoup(html, "html.parser").get_text(" ", strip=True)
+    return text[:3000]
+
+model = genai.GenerativeModel("gemini-2.5-flash-lite", tools=[web_search, fetch_page])
+chat = model.start_chat(enable_automatic_function_calling=True)
+response = chat.send_message("What did Anthropic publish about agents in 2024? Search, fetch the most relevant page, summarise.")
+print(response.text)</code></pre>
+    <div class="verify"><strong>Worked?</strong> Agent searches, picks a result, fetches, summarises in one go.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<section class="mini-project">
+  <div class="block-head"><span class="block-num">Block 8 · Mini-project</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-16">▶ Open VS Code here</a></div>
+  <h2>Research-assistant FastAPI agent</h2>
+  <div class="step">
+    <h4>Create <code>app/main.py</code></h4>
+    <pre><code>import os
+from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from duckduckgo_search import DDGS
+import requests, google.generativeai as genai
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+def web_search(query: str): return list(DDGS().text(query, max_results=3))
+def fetch_page(url: str):
+    html = requests.get(url, timeout=10).text
+    return BeautifulSoup(html, "html.parser").get_text(" ", strip=True)[:3000]
+
+model = genai.GenerativeModel("gemini-2.5-flash-lite", tools=[web_search, fetch_page])
+
+class Q(BaseModel):
+    question: str
+
+app = FastAPI()
+
+@app.post("/ask")
+def ask(q: Q):
+    chat = model.start_chat(enable_automatic_function_calling=True)
+    response = chat.send_message(q.question, stream=True)
+    def gen():
+        for chunk in response:
+            if chunk.text:
+                yield chunk.text
+    return StreamingResponse(gen(), media_type="text/plain")
+
+@app.get("/health")
+def health(): return {"status": "ok"}</code></pre>
+    <p class="do">Run + test:</p>
+    <pre><code>uvicorn app.main:app --reload</code></pre>
+    <pre><code>curl --no-buffer -X POST http://localhost:8000/ask -H "Content-Type: application/json" -d "{\"question\":\"What is the latest news about Vercel AI SDK?\"}"</code></pre>
+  </div>
+  <div class="step">
+    <h4>Push to GitHub</h4>
+    <pre><code>git init
+git add .
+git commit -m "feat(agents): research assistant agent (worksheet 16)"
+gh repo create research-agent --public --source=. --remote=origin --push</code></pre>
+    <div class="verify"><strong>Worked?</strong> Live at <a href="https://github.com/Dave-Buckley/research-agent" target="_blank">github.com/Dave-Buckley/research-agent</a>. Foundation for DAI-02.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<div class="footer-cta"><strong>Done? Tell Claude.</strong></div>
+</main>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
+const slug='16-agents';
+document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb)=>{const key=`progress.${slug}.${cb.dataset.block}`;cb.checked=localStorage.getItem(key)==='1';cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');updateProgress();});});
+function updateProgress(){const all=document.querySelectorAll('input[type="checkbox"][data-block]');const done=[...all].filter(c=>c.checked).length;document.querySelector('.progress-fill').style.width=`${(done/all.length)*100}%`;}
+updateProgress();
+document.querySelectorAll('pre').forEach((pre)=>{const code=pre.querySelector('code');if(!code)return;const btn=document.createElement('button');btn.className='copy-btn';btn.type='button';btn.textContent='Copy';btn.addEventListener('click',async(e)=>{e.preventDefault();try{await navigator.clipboard.writeText(code.innerText);}catch{const ta=document.createElement('textarea');ta.value=code.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}btn.textContent='Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);});pre.appendChild(btn);});
+</script></body></html>

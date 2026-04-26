@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 15 — RAG · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>.step{margin:16px 0 22px;padding:16px 18px;background:var(--card-soft);border-radius:10px;border-left:3px solid var(--accent);}.step h4{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--fg);}.step .what,.step .why{color:var(--fg-soft);font-size:14px;margin:0 0 8px;}.step .why{color:var(--fg-muted);font-size:13px;font-style:italic;}.step .do{font-size:13px;color:var(--fg-soft);margin:8px 0 6px;font-weight:600;}.step .verify{margin-top:12px;padding:10px 14px;background:var(--success-soft);border-radius:8px;color:var(--success-fg);font-size:13px;}.launcher{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:20px 0 32px;}.launcher a{display:flex;flex-direction:column;padding:14px 18px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-fg);text-decoration:none;font-weight:600;}.launcher a small{font-weight:400;font-size:12px;color:var(--fg-soft);margin-top:4px;}</style>
+</head><body><main>
+
+<nav class="nav"><a href="14-python-apis.html">← Worksheet 14</a><span style="color:var(--fg-muted)">Worksheet 15 of 17</span><a href="16-agents.html">Next: Agents →</a></nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>RAG (Retrieval-Augmented Generation)</h1>
+<p class="meta"><span>8 focus blocks</span><span>~4 hours total</span><span>Phase 5 prep — DAI-01</span></p>
+<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+
+<div class="callout info"><span class="callout-label">What is RAG?</span>"Retrieval-Augmented Generation" — instead of asking an LLM from its memory (which hallucinates), you give it relevant chunks of documents to read, then ask. Used in every "chat with your docs" product (Notion AI, GitHub Copilot Chat, etc.). Mini-project: a RAG API that answers questions about your own notes.</div>
+
+<p class="lead">Use ChromaDB (embedded vector database) to keep things simple. No external services beyond the LLM.</p>
+
+<h2>The full pipeline</h2>
+<div class="mermaid">
+flowchart LR
+    subgraph index[Indexing - one time]
+      A[Documents] --> B[Chunk] --> C[Embed] --> D[(Vector DB)]
+    end
+    subgraph query[Query - per request]
+      E[Question] --> F[Embed] --> G[Search top-k] --> H[Retrieved chunks] --> I[LLM with chunks] --> J[Answer + citations]
+    end
+    D -.-> G
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Click <strong>Open VS Code here</strong> to launch VS Code on this worksheet's folder. The "terminal" referred to throughout is <strong>VS Code's integrated terminal panel</strong> — open it via <strong>View → Terminal</strong>. No separate window needed.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-15">▶ Open VS Code here<small>opens VS Code on <code>15-rag</code>.</small></a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/15-rag/">Open the folder in Explorer</a>
+</div>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 1</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-15">▶ Open VS Code here</a></div>
+  <h2>Setup</h2>
+  <div class="step">
+    <h4>Install everything</h4>
+    <pre><code>cd "C:\Users\David\Documents\AI Course\15-rag"
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install chromadb google-generativeai fastapi "uvicorn[standard]" python-dotenv requests</code></pre>
+    <p class="do">Copy your <code>.env</code> from worksheet 14 here, OR re-create it with <code>GEMINI_API_KEY=...</code>.</p>
+    <p class="do">Add <code>.gitignore</code> with <code>.env</code>, <code>.venv/</code>, <code>__pycache__/</code>, <code>chroma_db/</code>.</p>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 2</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-15">▶ Open VS Code here</a></div>
+  <h2>Embeddings concept</h2>
+  <div class="step">
+    <h4>Create <code>01-embeddings.py</code></h4>
+    <pre><code>import os, numpy as np
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+sentences = [
+    "I love my dog",
+    "My puppy is the best companion",
+    "The stock market crashed yesterday",
+    "Federal Reserve raised interest rates",
+    "Python is a great programming language",
+]
+
+def embed(text):
+    return genai.embed_content(model="models/text-embedding-004", content=text)["embedding"]
+
+vectors = [embed(s) for s in sentences]
+
+def cosine(a, b):
+    a, b = np.array(a), np.array(b)
+    return (a @ b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+print(f"dog vs puppy:        {cosine(vectors[0], vectors[1]):.3f}")
+print(f"dog vs stocks:       {cosine(vectors[0], vectors[2]):.3f}")
+print(f"stocks vs Fed:       {cosine(vectors[2], vectors[3]):.3f}")</code></pre>
+    <div class="verify"><strong>Worked?</strong> Semantic pairs (dog/puppy, stocks/Fed) score higher than unrelated.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 3</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-15">▶ Open VS Code here</a></div>
+  <h2>Chunking strategies</h2>
+  <div class="step">
+    <h4>Create <code>02-chunking.py</code></h4>
+    <pre><code>import requests
+
+# Grab a Wikipedia article as test data
+text = requests.get("https://en.wikipedia.org/wiki/Sheffield?action=raw").text[:50000]
+
+def fixed_chunker(text, size=500, overlap=50):
+    chunks = []
+    for i in range(0, len(text), size - overlap):
+        chunks.append(text[i:i+size])
+    return chunks
+
+def paragraph_chunker(text):
+    return [p for p in text.split("\n\n") if p.strip()]
+
+print("fixed:    ", len(fixed_chunker(text)), "chunks")
+print("paragraph:", len(paragraph_chunker(text)), "chunks")</code></pre>
+    <div class="verify"><strong>Worked?</strong> Two different chunk counts. You understand chunks let LLMs work within their context limit.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 4</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-15">▶ Open VS Code here</a></div>
+  <h2>Vector DB index</h2>
+  <div class="step">
+    <h4>Create <code>03-index.py</code></h4>
+    <pre><code>import chromadb
+import requests
+from app_embed import embed   # we'll create this
+
+client = chromadb.PersistentClient(path="./chroma_db")
+collection = client.get_or_create_collection("notes")
+
+text = requests.get("https://en.wikipedia.org/wiki/Sheffield?action=raw").text[:50000]
+chunks = [text[i:i+500] for i in range(0, len(text), 450)][:50]
+
+collection.add(
+    documents=chunks,
+    ids=[f"chunk-{i}" for i in range(len(chunks))],
+    embeddings=[embed(c) for c in chunks],
+    metadatas=[{"source": "wikipedia/Sheffield", "chunk_index": i} for i in range(len(chunks))],
+)
+
+print(f"indexed {collection.count()} chunks")</code></pre>
+    <p class="do">Create <code>app_embed.py</code> with the <code>embed()</code> helper from Block 2.</p>
+    <div class="verify"><strong>Worked?</strong> Prints "indexed 50 chunks". A <code>chroma_db/</code> folder appears.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 5</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-15">▶ Open VS Code here</a></div>
+  <h2>Retrieval</h2>
+  <div class="step">
+    <h4>Create <code>04-retrieve.py</code></h4>
+    <pre><code>import chromadb
+from app_embed import embed
+
+client = chromadb.PersistentClient(path="./chroma_db")
+collection = client.get_collection("notes")
+
+def retrieve(question, k=3):
+    q_embedding = embed(question)
+    return collection.query(query_embeddings=[q_embedding], n_results=k)
+
+for q in ["What is Sheffield famous for?", "Tell me about the population", "What's the weather on Mars?"]:
+    print(f"\nQ: {q}")
+    results = retrieve(q)
+    for doc, dist in zip(results["documents"][0], results["distances"][0]):
+        print(f"  ({dist:.3f}) {doc[:80]}...")</code></pre>
+    <div class="verify"><strong>Worked?</strong> First two questions return relevant chunks; the Mars question gets distant matches.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 6</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-15">▶ Open VS Code here</a></div>
+  <h2>Generation with grounding</h2>
+  <div class="step">
+    <h4>Create <code>05-generate.py</code></h4>
+    <pre><code>import google.generativeai as genai
+import os
+from dotenv import load_dotenv
+import chromadb
+from app_embed import embed
+
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+client = chromadb.PersistentClient(path="./chroma_db")
+collection = client.get_collection("notes")
+model = genai.GenerativeModel("gemini-2.5-flash-lite")
+
+def ask(question, k=3):
+    res = collection.query(query_embeddings=[embed(question)], n_results=k)
+    chunks = res["documents"][0]
+    context = "\n\n---\n\n".join(f"[chunk {i}]\n{c}" for i, c in enumerate(chunks))
+    prompt = f"""Answer using ONLY the context below.
+If the answer isn't in the context, say "I don't know".
+Cite the chunk numbers you used.
+
+Context:
+{context}
+
+Question: {question}"""
+    return model.generate_content(prompt).text
+
+print(ask("What is Sheffield famous for?"))
+print("---")
+print(ask("Has anyone landed on Mars?"))</code></pre>
+    <div class="verify"><strong>Worked?</strong> First answer is grounded with citations; second says "I don't know" rather than hallucinate.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 7</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-15">▶ Open VS Code here</a></div>
+  <h2>Evals</h2>
+  <div class="step">
+    <h4>Create <code>06-eval.py</code></h4>
+    <pre><code>from app_generate import ask   # extract ask() into app_generate.py first
+
+eval_set = [
+    ("What region is Sheffield in?", "South Yorkshire"),
+    ("What is Sheffield's population?", "population"),
+    ("What is the capital of France?", "I don't know"),
+]
+
+results = []
+for q, expected in eval_set:
+    answer = ask(q).lower()
+    passed = expected.lower() in answer
+    results.append((q, passed, answer[:80]))
+    print(f"{'PASS' if passed else 'FAIL'}: {q}")
+    print(f"  -&gt; {answer[:120]}\n")
+
+accuracy = sum(1 for _, p, _ in results if p) / len(results)
+print(f"\naccuracy: {accuracy:.1%}")</code></pre>
+    <p class="do">Create <code>evals.md</code> noting which questions failed and one improvement you'd try (better chunking? bigger k? rerank?).</p>
+    <div class="verify"><strong>Worked?</strong> You have a quantified failure mode to improve.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<section class="mini-project">
+  <div class="block-head"><span class="block-num">Block 8 · Mini-project</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-15">▶ Open VS Code here</a></div>
+  <h2>Wrap as a FastAPI endpoint</h2>
+  <div class="step">
+    <h4>Create <code>app/main.py</code></h4>
+    <pre><code>from fastapi import FastAPI
+from pydantic import BaseModel
+from app_generate import ask
+import chromadb
+from app_embed import embed
+
+app = FastAPI()
+client = chromadb.PersistentClient(path="./chroma_db")
+collection = client.get_collection("notes")
+
+class Question(BaseModel):
+    text: str
+
+@app.post("/ask")
+def answer(q: Question):
+    res = collection.query(query_embeddings=[embed(q.text)], n_results=3)
+    citations = [
+        {"chunk_index": m["chunk_index"], "source": m["source"], "score": float(d)}
+        for m, d in zip(res["metadatas"][0], res["distances"][0])
+    ]
+    return {"answer": ask(q.text), "citations": citations}</code></pre>
+    <p class="do">Run + test:</p>
+    <pre><code>uvicorn app.main:app --reload</code></pre>
+    <pre><code>curl -X POST http://localhost:8000/ask -H "Content-Type: application/json" -d "{\"text\":\"What is Sheffield known for?\"}"</code></pre>
+  </div>
+  <div class="step">
+    <h4>Push to GitHub</h4>
+    <pre><code>git init
+git add .
+git commit -m "feat(rag): rag api over wikipedia (worksheet 15)"
+gh repo create rag-demo --public --source=. --remote=origin --push</code></pre>
+    <div class="verify"><strong>Worked?</strong> Live at <a href="https://github.com/Dave-Buckley/rag-demo" target="_blank">github.com/Dave-Buckley/rag-demo</a>. Foundation for DAI-01.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<div class="footer-cta"><strong>Done? Tell Claude.</strong></div>
+</main>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
+const slug='15-rag';
+document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb)=>{const key=`progress.${slug}.${cb.dataset.block}`;cb.checked=localStorage.getItem(key)==='1';cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');updateProgress();});});
+function updateProgress(){const all=document.querySelectorAll('input[type="checkbox"][data-block]');const done=[...all].filter(c=>c.checked).length;document.querySelector('.progress-fill').style.width=`${(done/all.length)*100}%`;}
+updateProgress();
+document.querySelectorAll('pre').forEach((pre)=>{const code=pre.querySelector('code');if(!code)return;const btn=document.createElement('button');btn.className='copy-btn';btn.type='button';btn.textContent='Copy';btn.addEventListener('click',async(e)=>{e.preventDefault();try{await navigator.clipboard.writeText(code.innerText);}catch{const ta=document.createElement('textarea');ta.value=code.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}btn.textContent='Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);});pre.appendChild(btn);});
+</script></body></html>

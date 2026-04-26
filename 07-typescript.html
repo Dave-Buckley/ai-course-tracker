@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 07 — TypeScript · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>.step{margin:16px 0 22px;padding:16px 18px;background:var(--card-soft);border-radius:10px;border-left:3px solid var(--accent);}.step h4{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--fg);}.step .what,.step .why{color:var(--fg-soft);font-size:14px;margin:0 0 8px;}.step .why{color:var(--fg-muted);font-size:13px;font-style:italic;}.step .do{font-size:13px;color:var(--fg-soft);margin:8px 0 6px;font-weight:600;}.step .verify{margin-top:12px;padding:10px 14px;background:var(--success-soft);border-radius:8px;color:var(--success-fg);font-size:13px;}.launcher{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:20px 0 32px;}.launcher a{display:flex;flex-direction:column;padding:14px 18px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-fg);text-decoration:none;font-weight:600;}.launcher a small{font-weight:400;font-size:12px;color:var(--fg-soft);margin-top:4px;}</style>
+</head><body><main>
+
+<nav class="nav"><a href="06-web-fundamentals.html">← Worksheet 06</a><span style="color:var(--fg-muted)">Worksheet 07 of 17</span><a href="08-nextjs.html">Next: Next.js →</a></nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>TypeScript</h1>
+<p class="meta"><span>8 focus blocks</span><span>~4 hours total</span><span>Phase 3 prep</span><span>Reference: <a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank">TS Handbook</a></span></p>
+<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+
+<div class="callout info">
+  <span class="callout-label">What is TypeScript?</span>
+  TypeScript is JavaScript plus a type system. Same runtime, same code (mostly), but you annotate variables with types and a compiler catches mistakes before you run. The Vercel AI SDK and Next.js are written in TypeScript — Phase 3 needs this.
+</div>
+
+<p class="lead">Mini-project at the end is a small typed utility library you push to GitHub.</p>
+
+<h2>What this covers</h2>
+<div class="mermaid">
+flowchart TD
+    Root["<b>TypeScript</b>"]:::root
+    Root --> A["<b>Primitives</b><br/>string · number · array · tuple"]
+    Root --> B["<b>Composites</b><br/>type · interface · union"]
+    Root --> C["<b>Generics</b><br/>function generics · constraints"]
+    Root --> D["<b>Narrowing</b><br/>typeof · in · discriminated unions"]
+    Root --> E["<b>Utility types</b><br/>Partial · Pick · Omit · Record"]
+    classDef root fill:#4f46e5,color:#ffffff,stroke:#4f46e5,stroke-width:2px
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Click <strong>Open VS Code here</strong> to launch VS Code on this worksheet's folder. The "terminal" referred to throughout is <strong>VS Code's integrated terminal panel</strong> — open it via <strong>View → Terminal</strong> at the top menu. No separate window needed.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-07">▶ Open VS Code here<small>opens VS Code on <code>07-typescript</code>.</small></a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/07-typescript/">Open the folder in Explorer</a>
+</div>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 1</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-07">▶ Open VS Code here</a></div>
+  <h2>Setup</h2>
+  <div class="step">
+    <h4>1. Init the project + install TS</h4>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>cd "C:\Users\David\Documents\AI Course\07-typescript"
+npm init -y
+npm install --save-dev typescript ts-node @types/node
+npx tsc --init</code></pre>
+    <div class="verify"><strong>Worked?</strong> A <code>tsconfig.json</code> appears in the folder.</div>
+  </div>
+  <div class="step">
+    <h4>2. Turn strict mode on</h4>
+    <p class="do">In VS Code, open <code>tsconfig.json</code>. Find the line <code>"strict": true</code> — make sure it's uncommented and set to <code>true</code>. Save.</p>
+  </div>
+  <div class="step">
+    <h4>3. <code>01-hello.ts</code> — first typed file</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>const name: string = "David";
+console.log(`Hello, ${name}`);</code></pre>
+    <p class="do">Run:</p>
+    <pre><code>npx ts-node 01-hello.ts</code></pre>
+    <p class="do">Now try assigning a number to <code>name</code> in the file (<code>const name: string = 5;</code>) — VS Code underlines it in red. TS caught it before runtime.</p>
+    <div class="verify"><strong>Worked?</strong> Original file runs cleanly. The bad assignment shows a red squiggle.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 2</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-07">▶ Open VS Code here</a></div>
+  <h2>Primitives, arrays, tuples, literal types</h2>
+  <div class="step">
+    <h4>1. <code>02-primitives.ts</code></h4>
+    <pre><code>const age: number = 32;
+const name: string = "Dave";
+const active: boolean = true;
+const empty: null = null;
+const nope: undefined = undefined;
+console.log({ age, name, active, empty, nope });</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. <code>03-arrays.ts</code></h4>
+    <pre><code>const nums: number[] = [1, 2, 3];
+const names: Array&lt;string&gt; = ["Alice", "Bob"];
+nums.push(4);
+// nums.push("five"); // would error
+console.log(nums, names);</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. <code>04-tuples.ts</code></h4>
+    <pre><code>const point: [number, number] = [3, 4];
+const named: readonly [string, number] = ["age", 32];
+console.log(point[0], named[1]);</code></pre>
+  </div>
+  <div class="step">
+    <h4>4. <code>05-literal-types.ts</code> — restricted strings</h4>
+    <pre><code>type Direction = "up" | "down" | "left" | "right";
+
+function move(dir: Direction) {
+  console.log(`moving ${dir}`);
+}
+
+move("up");
+// move("diagonal"); // error
+</code></pre>
+    <div class="verify"><strong>Worked?</strong> Run with ts-node — prints "moving up". Try the bad call to see the type error.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 3</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-07">▶ Open VS Code here</a></div>
+  <h2>type vs interface</h2>
+  <div class="step">
+    <h4>1. <code>06-type-alias.ts</code></h4>
+    <pre><code>type User = { id: number; name: string };
+const u: User = { id: 1, name: "Alice" };
+console.log(u);</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. <code>07-interface.ts</code></h4>
+    <pre><code>interface Account {
+  id: number;
+  email: string;
+}
+interface AdminAccount extends Account {
+  role: "admin";
+}
+const a: AdminAccount = { id: 1, email: "x@y.com", role: "admin" };
+console.log(a);</code></pre>
+    <div class="callout info"><span class="callout-label">When to use which?</span><strong>interface</strong> for object shapes you might extend. <strong>type</strong> for everything else (especially unions: <code>type Result = Success | Error</code>).</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 4</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-07">▶ Open VS Code here</a></div>
+  <h2>Functions</h2>
+  <div class="step">
+    <h4>1. <code>08-fn-types.ts</code> — typed functions</h4>
+    <pre><code>function add(a: number, b: number): number {
+  return a + b;
+}
+
+function greet(name: string, greeting: string = "Hello"): string {
+  return `${greeting}, ${name}`;
+}
+
+console.log(add(2, 3));
+console.log(greet("Dave"));
+console.log(greet("Alice", "Hi"));</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. <code>09-optional.ts</code></h4>
+    <pre><code>function describe(name: string, age?: number): string {
+  return age ? `${name} is ${age}` : name;
+}
+console.log(describe("Dave"));
+console.log(describe("Dave", 32));</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. <code>10-fn-as-value.ts</code></h4>
+    <pre><code>const double: (n: number) =&gt; number = (n) =&gt; n * 2;
+console.log(double(7));</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 5</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-07">▶ Open VS Code here</a></div>
+  <h2>Generics</h2>
+  <div class="callout info"><span class="callout-label">What's a generic?</span>A type variable that lets a function or interface work with many types while preserving type safety. Like a placeholder you fill in at the call site.</div>
+  <div class="step">
+    <h4>1. <code>11-generic-fn.ts</code></h4>
+    <pre><code>function identity&lt;T&gt;(x: T): T {
+  return x;
+}
+
+console.log(identity&lt;string&gt;("hello"));
+console.log(identity&lt;number&gt;(42));
+// TS often infers T, so identity("auto") works too</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. <code>12-generic-array.ts</code></h4>
+    <pre><code>function first&lt;T&gt;(arr: T[]): T | undefined {
+  return arr.length &gt; 0 ? arr[0] : undefined;
+}
+console.log(first([1, 2, 3]));
+console.log(first&lt;string&gt;([]));</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. <code>13-constrained-generic.ts</code></h4>
+    <pre><code>function logLength&lt;T extends { length: number }&gt;(x: T): T {
+  console.log("length:", x.length);
+  return x;
+}
+logLength("hello");
+logLength([1, 2, 3]);
+// logLength(42); // error - number has no length</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 6</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-07">▶ Open VS Code here</a></div>
+  <h2>Narrowing + discriminated unions</h2>
+  <div class="step">
+    <h4>1. <code>14-typeof-narrow.ts</code></h4>
+    <pre><code>function format(value: string | number): string {
+  if (typeof value === "string") {
+    return value.toUpperCase();   // TS knows it's a string here
+  }
+  return value.toFixed(2);        // TS knows it's a number here
+}
+console.log(format("hello"));
+console.log(format(3.14159));</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. <code>15-discriminated-union.ts</code> — the cleanest pattern</h4>
+    <pre><code>type Shape =
+  | { kind: "circle"; radius: number }
+  | { kind: "square"; side: number };
+
+function area(s: Shape): number {
+  switch (s.kind) {
+    case "circle": return Math.PI * s.radius ** 2;
+    case "square": return s.side ** 2;
+  }
+}
+console.log(area({ kind: "circle", radius: 5 }));
+console.log(area({ kind: "square", side: 4 }));</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 7</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-07">▶ Open VS Code here</a></div>
+  <h2>Utility types</h2>
+  <div class="step">
+    <h4>1. <code>16-utility.ts</code> — Partial, Pick, Omit, Record</h4>
+    <pre><code>type User = {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+};
+
+type UserPatch = Partial&lt;User&gt;;       // all fields optional
+type PublicUser = Omit&lt;User, "password"&gt;;
+type UserSummary = Pick&lt;User, "id" | "name"&gt;;
+type UserMap = Record&lt;string, User&gt;;
+
+const patch: UserPatch = { name: "Alice" };
+const summary: UserSummary = { id: 1, name: "Bob" };
+console.log(patch, summary);</code></pre>
+    <div class="verify"><strong>Worked?</strong> Runs cleanly. You can derive shapes from a base type without writing them out.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<section class="mini-project">
+  <div class="block-head"><span class="block-num">Block 8 · Mini-project</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-07">▶ Open VS Code here</a></div>
+  <h2>Tiny typed utility library</h2>
+  <div class="step">
+    <h4>1. Create <code>lib.ts</code> with three exports</h4>
+    <p class="do">Type:</p>
+    <pre><code>export function groupBy&lt;T, K extends string | number&gt;(
+  arr: T[],
+  key: (item: T) =&gt; K
+): Record&lt;K, T[]&gt; {
+  const out = {} as Record&lt;K, T[]&gt;;
+  for (const item of arr) {
+    const k = key(item);
+    (out[k] ||= []).push(item);
+  }
+  return out;
+}
+
+export function pick&lt;T, K extends keyof T&gt;(obj: T, keys: K[]): Pick&lt;T, K&gt; {
+  const out = {} as Pick&lt;T, K&gt;;
+  for (const k of keys) out[k] = obj[k];
+  return out;
+}
+
+export function safeJsonParse&lt;T&gt;(s: string): T | null {
+  try { return JSON.parse(s) as T; } catch { return null; }
+}</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. <code>lib.test.ts</code> — tests</h4>
+    <pre><code>import { groupBy, pick, safeJsonParse } from "./lib";
+
+const people = [
+  { name: "Alice", city: "London" },
+  { name: "Bob", city: "Sheffield" },
+  { name: "Carol", city: "London" },
+];
+
+const grouped = groupBy(people, (p) =&gt; p.city);
+console.assert(grouped.London.length === 2, "groupBy failed");
+
+const picked = pick({ a: 1, b: 2, c: 3 }, ["a", "c"]);
+console.assert(picked.a === 1 &amp;&amp; (picked as any).b === undefined, "pick failed");
+
+console.assert(safeJsonParse&lt;number&gt;("42") === 42, "json parse failed");
+console.assert(safeJsonParse("not json") === null, "json fail handling failed");
+
+console.log("all tests passed");</code></pre>
+    <p class="do">Run:</p>
+    <pre><code>npx ts-node lib.test.ts</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. Type check + ship</h4>
+    <pre><code>npx tsc --noEmit
+git init
+echo node_modules/ &gt; .gitignore
+git add lib.ts lib.test.ts package.json tsconfig.json .gitignore
+git commit -m "feat(ts): typed utility library (worksheet 07)"
+gh repo create ts-utils --public --source=. --remote=origin --push</code></pre>
+    <div class="verify"><strong>Worked?</strong> tsc reports zero errors, repo at <a href="https://github.com/Dave-Buckley/ts-utils" target="_blank">github.com/Dave-Buckley/ts-utils</a>.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<div class="footer-cta"><strong>Done? Tell Claude.</strong></div>
+</main>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
+const slug='07-typescript';
+document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb)=>{const key=`progress.${slug}.${cb.dataset.block}`;cb.checked=localStorage.getItem(key)==='1';cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');updateProgress();});});
+function updateProgress(){const all=document.querySelectorAll('input[type="checkbox"][data-block]');const done=[...all].filter(c=>c.checked).length;document.querySelector('.progress-fill').style.width=`${(done/all.length)*100}%`;}
+updateProgress();
+document.querySelectorAll('pre').forEach((pre)=>{const code=pre.querySelector('code');if(!code)return;const btn=document.createElement('button');btn.className='copy-btn';btn.type='button';btn.textContent='Copy';btn.addEventListener('click',async(e)=>{e.preventDefault();try{await navigator.clipboard.writeText(code.innerText);}catch{const ta=document.createElement('textarea');ta.value=code.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}btn.textContent='Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);});pre.appendChild(btn);});
+</script></body></html>

@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 11 — Python for Data Science · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>.step{margin:16px 0 22px;padding:16px 18px;background:var(--card-soft);border-radius:10px;border-left:3px solid var(--accent);}.step h4{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--fg);}.step .what,.step .why{color:var(--fg-soft);font-size:14px;margin:0 0 8px;}.step .why{color:var(--fg-muted);font-size:13px;font-style:italic;}.step .do{font-size:13px;color:var(--fg-soft);margin:8px 0 6px;font-weight:600;}.step .verify{margin-top:12px;padding:10px 14px;background:var(--success-soft);border-radius:8px;color:var(--success-fg);font-size:13px;}.launcher{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:20px 0 32px;}.launcher a{display:flex;flex-direction:column;padding:14px 18px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-fg);text-decoration:none;font-weight:600;}.launcher a small{font-weight:400;font-size:12px;color:var(--fg-soft);margin-top:4px;}</style>
+</head><body><main>
+
+<nav class="nav"><a href="10-vercel-ai-sdk.html">← Worksheet 10</a><span style="color:var(--fg-muted)">Worksheet 11 of 17</span><a href="12-ml-maths.html">Next: ML Maths →</a></nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>Python for Data Science</h1>
+<p class="meta"><span>14 focus blocks</span><span>~7 hours total</span><span>Phase 4 prep</span><span>Reference: <a href="https://course.fast.ai/Lessons/lesson1.html" target="_blank">fast.ai Lesson 1</a></span></p>
+<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+
+<div class="callout info"><span class="callout-label">Why this exists</span>fast.ai assumes you already use NumPy, pandas, matplotlib and Jupyter daily. This worksheet makes that true. Mini-project is a full EDA notebook on the penguins dataset — the kind of artefact hiring managers want to see.</div>
+
+<p class="lead">All work happens in Jupyter notebooks. VS Code's Jupyter extension gives you the same experience without leaving the editor.</p>
+
+<h2>What this covers</h2>
+<div class="mermaid">
+flowchart TD
+    Root["<b>Data Science</b>"]:::root
+    Root --> A["<b>Jupyter</b><br/>cells · magics"]
+    Root --> B["<b>NumPy</b><br/>arrays · vectorised · broadcast"]
+    Root --> C["<b>pandas</b><br/>DataFrame · filter · groupby · merge"]
+    Root --> D["<b>Visualisation</b><br/>matplotlib · seaborn · pairplot"]
+    Root --> E["<b>scikit-learn</b><br/>train test · fit predict · metrics"]
+    classDef root fill:#4f46e5,color:#ffffff,stroke:#4f46e5,stroke-width:2px
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Click <strong>Open VS Code here</strong> to launch VS Code on this worksheet's folder. The "terminal" or "PowerShell" referred to throughout is <strong>VS Code's integrated terminal panel</strong> — open it via <strong>View → Terminal</strong>. Notebook cells run inside VS Code too — no separate window needed.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-11">▶ Open VS Code here<small>opens VS Code on <code>11-python-data-science</code>.</small></a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/11-python-data-science/">Open the folder in Explorer</a>
+</div>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 1</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-11">▶ Open VS Code here</a></div>
+  <h2>Setup — venv, packages, Jupyter</h2>
+  <div class="step">
+    <h4>1. New venv + install the data stack</h4>
+    <pre><code>cd "C:\Users\David\Documents\AI Course\11-python-data-science"
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install jupyter numpy pandas matplotlib seaborn scikit-learn</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Install VS Code's Jupyter extension</h4>
+    <p class="do">In VS Code: open the Extensions panel (square icon, left rail) → search "Jupyter" → install the official one.</p>
+  </div>
+  <div class="step">
+    <h4>3. Create your first notebook</h4>
+    <p class="do">In VS Code, hover over <strong>11-PYTHON-DATA-SCIENCE</strong> in the file panel, click "New File", name it <code>00-hello.ipynb</code>. It opens with a single empty cell.</p>
+    <p class="do">Click in the cell, type:</p>
+    <pre><code>print("hello from jupyter")</code></pre>
+    <p class="do">Press <kbd>Shift</kbd>+<kbd>Enter</kbd> to run.</p>
+    <div class="verify"><strong>Worked?</strong> "hello from jupyter" appears below the cell. Pick the .venv kernel if prompted.</div>
+  </div>
+  <div class="step">
+    <h4>4. Download the dataset</h4>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>curl -o penguins.csv https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv</code></pre>
+    <div class="verify"><strong>Worked?</strong> <code>penguins.csv</code> appears in the file panel.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 2</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-11">▶ Open VS Code here</a></div>
+  <h2>NumPy arrays</h2>
+  <div class="step">
+    <h4>Create <code>01-arrays.ipynb</code></h4>
+    <p class="do">Add three cells:</p>
+    <pre><code># Cell 1
+import numpy as np
+a = np.array([1, 2, 3, 4, 5])
+print(a, a.shape, a.dtype, a.size)</code></pre>
+    <pre><code># Cell 2
+print(np.arange(0, 10))
+print(np.linspace(0, 1, 11))</code></pre>
+    <pre><code># Cell 3
+b = np.arange(12).reshape(3, 4)
+print(b)
+print(b.shape)
+print(b.reshape(2, 2, 3))</code></pre>
+    <div class="verify"><strong>Worked?</strong> All three cells run cleanly, output matches expectations (shape changes, etc.).</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 3</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-11">▶ Open VS Code here</a></div>
+  <h2>NumPy: vectorised ops + broadcasting</h2>
+  <div class="step">
+    <h4>Create <code>02-vectorised.ipynb</code></h4>
+    <pre><code># Vectorised - no for loop
+arr = np.arange(10)
+print(arr * 2)
+print(arr + arr)</code></pre>
+    <pre><code># Broadcasting
+a = np.array([[1, 2, 3], [4, 5, 6]])  # shape (2, 3)
+b = np.array([10, 20, 30])             # shape (3,)
+print(a + b)  # b broadcasts to each row</code></pre>
+    <pre><code># Stats
+data = np.random.rand(1000)
+print(data.mean(), data.std(), data.min(), data.max(), data.argmax())</code></pre>
+    <div class="verify"><strong>Worked?</strong> Each cell runs. You can explain why broadcasting works for compatible shapes.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 4</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-11">▶ Open VS Code here</a></div>
+  <h2>pandas: load + inspect</h2>
+  <div class="step">
+    <h4>Create <code>03-load.ipynb</code></h4>
+    <pre><code>import pandas as pd
+df = pd.read_csv("penguins.csv")
+df.head()</code></pre>
+    <pre><code>df.info()</code></pre>
+    <pre><code>df.describe()</code></pre>
+    <pre><code># Single column (Series) vs multiple (DataFrame)
+print(type(df["species"]))
+print(type(df[["species", "body_mass_g"]]))</code></pre>
+    <div class="verify"><strong>Worked?</strong> You can answer "how many rows, what columns, any NaNs" in 30 seconds for any CSV.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 5</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-11">▶ Open VS Code here</a></div>
+  <h2>pandas: filter + clean</h2>
+  <div class="step">
+    <h4>Create <code>04-filter.ipynb</code></h4>
+    <pre><code># Single condition
+heavy = df[df["body_mass_g"] &gt; 5000]
+heavy.head()</code></pre>
+    <pre><code># Multi-condition
+adelie_heavy = df[(df["species"] == "Adelie") &amp; (df["body_mass_g"] &gt; 4000)]
+adelie_heavy.shape</code></pre>
+    <pre><code># NaN handling
+print(df.isna().sum())
+df_clean = df.dropna()
+print(df_clean.shape)</code></pre>
+    <div class="verify"><strong>Worked?</strong> Multi-condition filter works. NaN counts visible.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 6</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-11">▶ Open VS Code here</a></div>
+  <h2>pandas: aggregate + merge</h2>
+  <div class="step">
+    <h4>Create <code>05-aggregate.ipynb</code></h4>
+    <pre><code># GroupBy
+df.groupby("species")["body_mass_g"].mean()</code></pre>
+    <pre><code># Sort + top 5
+df.sort_values("body_mass_g", ascending=False).head(5)</code></pre>
+    <pre><code># Add a column
+df["body_mass_kg"] = df["body_mass_g"] / 1000
+df.head()</code></pre>
+    <pre><code># Merge
+habitat = pd.DataFrame({"species": ["Adelie", "Chinstrap", "Gentoo"],
+                        "habitat": ["Antarctica", "South Shetland", "Falklands"]})
+df.merge(habitat, on="species").head()</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 7</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-11">▶ Open VS Code here</a></div>
+  <h2>matplotlib basics</h2>
+  <div class="mermaid">
+flowchart TD
+    A[Question?] --> B{Distribution?}
+    A --> C{Two-var<br/>relationship?}
+    A --> D{Counts by<br/>category?}
+    B --> B1[histogram]
+    B --> B2[boxplot]
+    C --> C1[scatter]
+    C --> C2[line]
+    D --> D1[bar]
+</div>
+  <div class="step">
+    <h4>Create <code>06-plots.ipynb</code></h4>
+    <pre><code>import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.linspace(0, 10, 100)
+plt.plot(x, x**2)
+plt.title("y = x squared")
+plt.xlabel("x"); plt.ylabel("y")
+plt.show()</code></pre>
+    <pre><code>plt.scatter(df["flipper_length_mm"], df["body_mass_g"], c=df["species"].astype("category").cat.codes)
+plt.xlabel("flipper length (mm)"); plt.ylabel("body mass (g)")
+plt.show()</code></pre>
+    <pre><code>plt.hist(df["body_mass_g"].dropna(), bins=30)
+plt.xlabel("body mass (g)")
+plt.show()</code></pre>
+    <div class="verify"><strong>Worked?</strong> All three plots render cleanly with axis labels.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 8</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-11">▶ Open VS Code here</a></div>
+  <h2>seaborn + subplots</h2>
+  <div class="step">
+    <h4>Create <code>07-seaborn.ipynb</code></h4>
+    <pre><code>import seaborn as sns
+sns.pairplot(df.dropna(), hue="species")</code></pre>
+    <pre><code>fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+df["body_mass_g"].dropna().hist(ax=axes[0,0]); axes[0,0].set_title("Mass distribution")
+df["species"].value_counts().plot(kind="bar", ax=axes[0,1]); axes[0,1].set_title("Counts")
+axes[1,0].scatter(df["flipper_length_mm"], df["body_mass_g"]); axes[1,0].set_title("Flipper vs Mass")
+df.boxplot(column="body_mass_g", by="species", ax=axes[1,1])
+plt.tight_layout()
+plt.show()</code></pre>
+    <div class="verify"><strong>Worked?</strong> Pair plot shows pairwise relationships colour-coded by species. The 2x2 grid renders.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 9</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-11">▶ Open VS Code here</a></div>
+  <h2>sklearn: train/test split + decision tree</h2>
+  <div class="mermaid">
+flowchart LR
+    A[Load] --> B[train_test_split]
+    B --> C[fit] --> D[predict] --> E[score]
+</div>
+  <div class="step">
+    <h4>Create <code>08-tree.ipynb</code></h4>
+    <pre><code>from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+
+clean = df.dropna()
+features = ["bill_length_mm", "flipper_length_mm", "body_mass_g"]
+X = clean[features]
+y = clean["species"]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+model = DecisionTreeClassifier(random_state=42)
+model.fit(X_train, y_train)
+print(model.score(X_test, y_test))</code></pre>
+    <div class="verify"><strong>Worked?</strong> Score is &gt; 0.9.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="9"> Block 9 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 10</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-11">▶ Open VS Code here</a></div>
+  <h2>sklearn: KNN + metrics</h2>
+  <div class="step">
+    <h4>Create <code>09-metrics.ipynb</code></h4>
+    <pre><code>from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import confusion_matrix, classification_report
+
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+print(knn.score(X_test, y_test))</code></pre>
+    <pre><code>preds = knn.predict(X_test)
+print(confusion_matrix(y_test, preds))
+print(classification_report(y_test, preds))</code></pre>
+    <div class="verify"><strong>Worked?</strong> Classification report shows precision/recall/F1 per class.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="10"> Block 10 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 11</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-11">▶ Open VS Code here</a></div>
+  <h2>Jupyter productivity tricks</h2>
+  <div class="step">
+    <h4>Create <code>10-magics.ipynb</code></h4>
+    <pre><code>%timeit [i*i for i in range(1000)]</code></pre>
+    <pre><code># Shell from a cell
+!pip list | head -10</code></pre>
+    <pre><code># Switch a cell to Markdown (use the dropdown at the top of the cell)
+# Type in markdown, run to render</code></pre>
+    <p class="do">Try exporting: File → Export → HTML.</p>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="11"> Block 11 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 12</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-11">▶ Open VS Code here</a></div>
+  <h2>Mini-project: <code>penguin-eda.ipynb</code> — Load + clean section</h2>
+  <div class="step">
+    <h4>1. Create the notebook</h4>
+    <p class="do">New file: <code>penguin-eda.ipynb</code>.</p>
+  </div>
+  <div class="step">
+    <h4>2. Add a Markdown title cell + intro</h4>
+    <pre><code># Penguin EDA
+
+A short exploratory data analysis on the Palmer Penguins dataset.
+By David Buckley, AI Course Worksheet 11.</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. Load + inspect section</h4>
+    <p class="do">Add a Markdown heading "## Load and inspect" then code cells:</p>
+    <pre><code>import pandas as pd
+df = pd.read_csv("penguins.csv")
+df.info()</code></pre>
+    <pre><code>df.describe()</code></pre>
+    <pre><code>df.isna().sum()</code></pre>
+  </div>
+  <div class="step">
+    <h4>4. Clean section</h4>
+    <p class="do">Markdown heading "## Clean", then explain in markdown which choice you make (drop NaNs vs impute), then a cell:</p>
+    <pre><code>df_clean = df.dropna()
+print(f"started with {len(df)}, kept {len(df_clean)} rows")</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="12"> Block 12 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 13</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-11">▶ Open VS Code here</a></div>
+  <h2>Mini-project: visualisation section</h2>
+  <div class="step">
+    <h4>Add 4 plots with markdown narration</h4>
+    <p class="do">Markdown heading "## EDA plots". Then for each: a markdown sentence above explaining what you're showing, followed by a code cell. Plots:</p>
+    <ol style="padding-left:20px;color:var(--fg-soft);font-size:14px;">
+      <li>Histogram of <code>body_mass_g</code></li>
+      <li>Scatter of <code>flipper_length_mm</code> vs <code>body_mass_g</code> coloured by species</li>
+      <li>Bar chart of count per island</li>
+      <li>Pair plot via seaborn</li>
+    </ol>
+    <p class="do">End with markdown bullet-list "## Findings" summarising 3 things you noticed.</p>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="13"> Block 13 complete</label>
+</section>
+
+<section class="mini-project">
+  <div class="block-head"><span class="block-num">Block 14 · Mini-project</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-11">▶ Open VS Code here</a></div>
+  <h2>Mini-project: model + ship</h2>
+  <div class="step">
+    <h4>1. Modelling section</h4>
+    <p class="do">Markdown "## Modelling". Then split, fit two classifiers, compare scores. Markdown sentence on which is better and why.</p>
+  </div>
+  <div class="step">
+    <h4>2. Evaluation section</h4>
+    <p class="do">Markdown "## Evaluation". Confusion matrix + classification report for the better model.</p>
+  </div>
+  <div class="step">
+    <h4>3. Conclusion</h4>
+    <p class="do">Markdown "## Conclusion" with 3 bullets summarising what you found.</p>
+  </div>
+  <div class="step">
+    <h4>4. Ship</h4>
+    <pre><code>git init
+echo .venv/ &gt; .gitignore
+echo .ipynb_checkpoints/ &gt;&gt; .gitignore
+git add penguin-eda.ipynb penguins.csv .gitignore
+git commit -m "feat(ds): penguin EDA notebook (worksheet 11)"
+gh repo create penguin-eda --public --source=. --remote=origin --push</code></pre>
+    <div class="verify"><strong>Worked?</strong> Live at <a href="https://github.com/Dave-Buckley/penguin-eda" target="_blank">github.com/Dave-Buckley/penguin-eda</a>. Notebook renders cleanly on GitHub.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="14"> Block 14 complete</label>
+</section>
+
+<div class="footer-cta"><strong>Done? Tell Claude.</strong></div>
+</main>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
+const slug='11-python-data-science';
+document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb)=>{const key=`progress.${slug}.${cb.dataset.block}`;cb.checked=localStorage.getItem(key)==='1';cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');updateProgress();});});
+function updateProgress(){const all=document.querySelectorAll('input[type="checkbox"][data-block]');const done=[...all].filter(c=>c.checked).length;document.querySelector('.progress-fill').style.width=`${(done/all.length)*100}%`;}
+updateProgress();
+document.querySelectorAll('pre').forEach((pre)=>{const code=pre.querySelector('code');if(!code)return;const btn=document.createElement('button');btn.className='copy-btn';btn.type='button';btn.textContent='Copy';btn.addEventListener('click',async(e)=>{e.preventDefault();try{await navigator.clipboard.writeText(code.innerText);}catch{const ta=document.createElement('textarea');ta.value=code.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}btn.textContent='Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);});pre.appendChild(btn);});
+</script></body></html>

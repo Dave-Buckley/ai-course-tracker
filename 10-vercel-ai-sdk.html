@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 10 — Vercel AI SDK · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>.step{margin:16px 0 22px;padding:16px 18px;background:var(--card-soft);border-radius:10px;border-left:3px solid var(--accent);}.step h4{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--fg);}.step .what,.step .why{color:var(--fg-soft);font-size:14px;margin:0 0 8px;}.step .why{color:var(--fg-muted);font-size:13px;font-style:italic;}.step .do{font-size:13px;color:var(--fg-soft);margin:8px 0 6px;font-weight:600;}.step .verify{margin-top:12px;padding:10px 14px;background:var(--success-soft);border-radius:8px;color:var(--success-fg);font-size:13px;}.launcher{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:20px 0 32px;}.launcher a{display:flex;flex-direction:column;padding:14px 18px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-fg);text-decoration:none;font-weight:600;}.launcher a small{font-weight:400;font-size:12px;color:var(--fg-soft);margin-top:4px;}</style>
+</head><body><main>
+
+<nav class="nav"><a href="09-sql-postgres.html">← Worksheet 09</a><span style="color:var(--fg-muted)">Worksheet 10 of 17</span><a href="11-python-data-science.html">Next: Python Data Science →</a></nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>Vercel AI SDK</h1>
+<p class="meta"><span>8 focus blocks</span><span>~4 hours total</span><span>Phase 3 prep</span><span>Reference: <a href="https://ai-sdk.dev/" target="_blank">AI SDK docs</a></span></p>
+<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+
+<div class="callout info"><span class="callout-label">What is the Vercel AI SDK?</span>A TypeScript library that gives you a unified API for every major LLM provider. <code>generateText</code>, <code>streamText</code>, <code>generateObject</code> work identically whether you use Anthropic, Google, OpenAI, or 20 others. Used in your portfolio's AI features later.</div>
+
+<p class="lead">Mini-project: a deployed public chat demo on Vercel.</p>
+
+<h2>The architecture</h2>
+<div class="mermaid">
+sequenceDiagram
+    participant U as Browser
+    participant R as Next.js route
+    participant G as AI Gateway
+    participant L as Model
+    U->>R: POST /api/chat (messages)
+    R->>G: streamText("google/gemini-2.5-flash-lite", messages)
+    G->>L: forward
+    L-->>G: token
+    G-->>R: token
+    R-->>U: SSE chunk
+    L-->>G: done
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Click <strong>Open VS Code here</strong> to launch VS Code on this worksheet's folder. The "terminal" or "PowerShell" referred to throughout is <strong>VS Code's integrated terminal panel</strong> — open it via <strong>View → Terminal</strong> at the top menu. No separate window needed.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-10">▶ Open VS Code here<small>opens VS Code on <code>10-vercel-ai-sdk</code>.</small></a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/10-vercel-ai-sdk/">Open the folder in Explorer</a>
+</div>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 1</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-10">▶ Open VS Code here</a></div>
+  <h2>Setup</h2>
+  <div class="step">
+    <h4>1. Scaffold a Next.js app</h4>
+    <pre><code>cd "C:\Users\David\Documents\AI Course\10-vercel-ai-sdk"
+npx create-next-app@latest ai-playground --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --turbopack --yes
+cd ai-playground
+npm install ai zod</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Get a Vercel AI Gateway key</h4>
+    <p class="do">Open <a href="https://vercel.com/dashboard/ai/api-keys" target="_blank">vercel.com/dashboard/ai/api-keys</a> → Create key. Copy it.</p>
+    <p class="do">In VS Code, create <code>.env.local</code> in <code>ai-playground/</code>. Type:</p>
+    <pre><code>AI_GATEWAY_API_KEY=paste-your-key-here</code></pre>
+    <div class="verify"><strong>Worked?</strong> The <code>.env.local</code> file is gitignored automatically by create-next-app.</div>
+  </div>
+  <div class="step">
+    <h4>3. Run dev server</h4>
+    <pre><code>npm run dev</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 2</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-10">▶ Open VS Code here</a></div>
+  <h2><code>generateText</code> — non-streaming</h2>
+  <div class="step">
+    <h4>Create <code>src/app/api/generate/route.ts</code></h4>
+    <pre><code>import { generateText } from "ai";
+
+export async function POST(req: Request) {
+  const { prompt } = await req.json();
+  const { text } = await generateText({
+    model: "google/gemini-2.5-flash-lite",
+    prompt,
+  });
+  return Response.json({ text });
+}</code></pre>
+    <p class="do">Test in PowerShell:</p>
+    <pre><code>curl -X POST http://localhost:3000/api/generate -H "Content-Type: application/json" -d "{\"prompt\":\"Say hi in one sentence\"}"</code></pre>
+    <div class="verify"><strong>Worked?</strong> JSON response with the LLM's text.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 3</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-10">▶ Open VS Code here</a></div>
+  <h2><code>streamText</code> — streaming</h2>
+  <div class="step">
+    <h4>Create <code>src/app/api/chat/route.ts</code></h4>
+    <pre><code>import { streamText } from "ai";
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+  const result = streamText({
+    model: "google/gemini-2.5-flash-lite",
+    messages,
+  });
+  return result.toDataStreamResponse();
+}</code></pre>
+    <p class="do">Test:</p>
+    <pre><code>curl --no-buffer -X POST http://localhost:3000/api/chat -H "Content-Type: application/json" -d "{\"messages\":[{\"role\":\"user\",\"content\":\"Tell me a 3-line story.\"}]}"</code></pre>
+    <div class="verify"><strong>Worked?</strong> Tokens stream in over the connection rather than arriving all at once.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 4</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-10">▶ Open VS Code here</a></div>
+  <h2>Frontend chat with <code>useChat</code></h2>
+  <div class="step">
+    <h4>Create <code>src/app/chat/page.tsx</code></h4>
+    <pre><code>"use client";
+
+import { useChat } from "ai/react";
+
+export default function Chat() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat();
+  return (
+    &lt;div className="max-w-2xl mx-auto p-6"&gt;
+      {messages.map((m) =&gt; (
+        &lt;div key={m.id} className="mb-3"&gt;
+          &lt;b&gt;{m.role}:&lt;/b&gt; {m.content}
+        &lt;/div&gt;
+      ))}
+      &lt;form onSubmit={handleSubmit} className="flex gap-2"&gt;
+        &lt;input value={input} onChange={handleInputChange} className="border flex-1 px-2 py-1" /&gt;
+        &lt;button className="border px-4 py-1 rounded"&gt;Send&lt;/button&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+    <p class="do">Visit <a href="http://localhost:3000/chat" target="_blank">localhost:3000/chat</a>. Send a message.</p>
+    <div class="verify"><strong>Worked?</strong> Streaming chat with characters appearing as they arrive.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 5</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-10">▶ Open VS Code here</a></div>
+  <h2>Structured output with Zod</h2>
+  <div class="step">
+    <h4>Create <code>src/app/api/structured/route.ts</code></h4>
+    <pre><code>import { generateObject } from "ai";
+import { z } from "zod";
+
+export async function POST(req: Request) {
+  const { text } = await req.json();
+  const { object } = await generateObject({
+    model: "google/gemini-2.5-flash-lite",
+    schema: z.object({
+      summary: z.string(),
+      bullets: z.array(z.string()).length(3),
+      sentiment: z.enum(["positive", "negative", "neutral"]),
+    }),
+    prompt: `Summarise: ${text}`,
+  });
+  return Response.json(object);
+}</code></pre>
+    <p class="do">Test with curl. Response is guaranteed-shaped — Zod validates.</p>
+    <div class="verify"><strong>Worked?</strong> JSON has exactly the three fields, with bullets array of length 3.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 6</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-10">▶ Open VS Code here</a></div>
+  <h2>Tool calling</h2>
+  <div class="step">
+    <h4>Create <code>src/app/api/tools/route.ts</code></h4>
+    <pre><code>import { streamText, tool, stepCountIs } from "ai";
+import { z } from "zod";
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+  const result = streamText({
+    model: "google/gemini-2.5-flash-lite",
+    messages,
+    tools: {
+      get_weather: tool({
+        description: "Get the current weather for a city",
+        inputSchema: z.object({ city: z.string() }),
+        execute: async ({ city }) =&gt; ({ city, temp: 12, condition: "rain" }),
+      }),
+    },
+    stopWhen: stepCountIs(5),
+  });
+  return result.toDataStreamResponse();
+}</code></pre>
+    <p class="do">Test by sending "what's the weather in London?" — confirm the tool gets called.</p>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 7</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-10">▶ Open VS Code here</a></div>
+  <h2>Rate limiting + error handling</h2>
+  <div class="step">
+    <h4>1. Sign up for Upstash Redis</h4>
+    <p class="do">Open <a href="https://upstash.com/" target="_blank">upstash.com</a>, sign up free, create a Redis database. Copy <code>UPSTASH_REDIS_REST_URL</code> and <code>UPSTASH_REDIS_REST_TOKEN</code> into <code>.env.local</code>.</p>
+  </div>
+  <div class="step">
+    <h4>2. Install + wire rate limit</h4>
+    <pre><code>npm install @upstash/ratelimit @upstash/redis</code></pre>
+    <p class="do">In <code>src/app/api/chat/route.ts</code>, add at the top:</p>
+    <pre><code>import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+const ratelimit = new Ratelimit({ redis: Redis.fromEnv(), limiter: Ratelimit.slidingWindow(10, "1 m") });</code></pre>
+    <p class="do">In the POST handler, before <code>streamText</code>, add:</p>
+    <pre><code>const ip = req.headers.get("x-forwarded-for") ?? "anon";
+const { success } = await ratelimit.limit(ip);
+if (!success) return new Response("Too many requests", { status: 429 });</code></pre>
+    <div class="verify"><strong>Worked?</strong> Hit the endpoint 11 times in a minute — the 11th gets 429.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<section class="mini-project">
+  <div class="block-head"><span class="block-num">Block 8 · Mini-project</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-10">▶ Open VS Code here</a></div>
+  <h2>Deploy public chat demo</h2>
+  <div class="step">
+    <h4>1. Add a system prompt + polish UI</h4>
+    <p class="do">In the chat route, add a system message at the start of every conversation: "You are a helpful study buddy for a UK PE teacher learning to code." Polish the chat page with Tailwind.</p>
+  </div>
+  <div class="step">
+    <h4>2. Push + deploy</h4>
+    <pre><code>git init
+git add .
+git commit -m "feat(ai-sdk): playground with chat, tools, structured output"
+gh repo create ai-playground --public --source=. --remote=origin --push</code></pre>
+    <p class="do">Open <a href="https://vercel.com/new" target="_blank">vercel.com/new</a>, import the repo, add the env vars (<code>AI_GATEWAY_API_KEY</code>, Upstash keys), deploy.</p>
+    <div class="verify"><strong>Worked?</strong> Public URL works for anyone to chat.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<div class="footer-cta"><strong>Done? Tell Claude.</strong></div>
+</main>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
+const slug='10-vercel-ai-sdk';
+document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb)=>{const key=`progress.${slug}.${cb.dataset.block}`;cb.checked=localStorage.getItem(key)==='1';cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');updateProgress();});});
+function updateProgress(){const all=document.querySelectorAll('input[type="checkbox"][data-block]');const done=[...all].filter(c=>c.checked).length;document.querySelector('.progress-fill').style.width=`${(done/all.length)*100}%`;}
+updateProgress();
+document.querySelectorAll('pre').forEach((pre)=>{const code=pre.querySelector('code');if(!code)return;const btn=document.createElement('button');btn.className='copy-btn';btn.type='button';btn.textContent='Copy';btn.addEventListener('click',async(e)=>{e.preventDefault();try{await navigator.clipboard.writeText(code.innerText);}catch{const ta=document.createElement('textarea');ta.value=code.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}btn.textContent='Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);});pre.appendChild(btn);});
+</script></body></html>

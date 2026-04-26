@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 12 — ML Maths · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>.step{margin:16px 0 22px;padding:16px 18px;background:var(--card-soft);border-radius:10px;border-left:3px solid var(--accent);}.step h4{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--fg);}.step .what,.step .why{color:var(--fg-soft);font-size:14px;margin:0 0 8px;}.step .why{color:var(--fg-muted);font-size:13px;font-style:italic;}.step .do{font-size:13px;color:var(--fg-soft);margin:8px 0 6px;font-weight:600;}.step .verify{margin-top:12px;padding:10px 14px;background:var(--success-soft);border-radius:8px;color:var(--success-fg);font-size:13px;}.launcher{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:20px 0 32px;}.launcher a{display:flex;flex-direction:column;padding:14px 18px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-fg);text-decoration:none;font-weight:600;}.launcher a small{font-weight:400;font-size:12px;color:var(--fg-soft);margin-top:4px;}</style>
+</head><body><main>
+
+<nav class="nav"><a href="11-python-data-science.html">← Worksheet 11</a><span style="color:var(--fg-muted)">Worksheet 12 of 17</span><a href="13-fastai-prep.html">Next: fast.ai Prep →</a></nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>ML Maths Refresher</h1>
+<p class="meta"><span>8 focus blocks</span><span>~4 hours total</span><span>Phase 4 prep</span></p>
+<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+
+<div class="callout info"><span class="callout-label">Goal: enough not depth</span>This worksheet gives you enough fluency to follow Andrew Ng + fast.ai lectures without panicking. Linear algebra, calculus, probability, optimisation. Everything in NumPy. The mini-project is a 2-layer neural network in raw NumPy.</div>
+
+<p class="lead">3Blue1Brown videos open the maths intuitively. Code in Jupyter alongside.</p>
+
+<h2>Where each topic shows up</h2>
+<div class="mermaid">
+flowchart LR
+    A[Vectors] -->|inputs| B[Model]
+    C[Matrix mult] -->|forward pass| B
+    D[Derivatives] -->|backprop| B
+    E[Loss + gradient] --> F[Gradient descent]
+    F -->|update| B
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Click <strong>Open VS Code here</strong> to launch VS Code on this worksheet's folder. The "terminal" referred to throughout is <strong>VS Code's integrated terminal panel</strong> — open it via <strong>View → Terminal</strong>. Notebook cells run inside VS Code too — no separate window needed.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-12">▶ Open VS Code here<small>opens VS Code on <code>12-ml-maths</code>.</small></a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/12-ml-maths/">Open the folder in Explorer</a>
+</div>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 1</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-12">▶ Open VS Code here</a></div>
+  <h2>Vectors</h2>
+  <div class="step">
+    <h4>1. Watch 3Blue1Brown's "Vectors" (10 min)</h4>
+    <p class="do">Open <a href="https://www.youtube.com/watch?v=fNk_zzaMoSs" target="_blank">3Blue1Brown — Vectors, what even are they?</a>. Watch.</p>
+  </div>
+  <div class="step">
+    <h4>2. Setup + first notebook</h4>
+    <pre><code>cd "C:\Users\David\Documents\AI Course\12-ml-maths"
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install numpy matplotlib sympy</code></pre>
+    <p class="do">In VS Code, create <code>01-vectors.ipynb</code>. Type cells:</p>
+    <pre><code>import numpy as np
+
+a = np.array([3, 4])
+b = np.array([1, 2])
+print("a + b =", a + b)
+print("a * 2 =", a * 2)
+print("|a| =", np.linalg.norm(a))</code></pre>
+    <pre><code># Dot product (two ways)
+print("a . b =", a @ b, "or", np.dot(a, b))</code></pre>
+    <pre><code># Angle between
+cos_theta = (a @ b) / (np.linalg.norm(a) * np.linalg.norm(b))
+print("cos theta =", cos_theta, "theta =", np.degrees(np.arccos(cos_theta)))</code></pre>
+    <div class="verify"><strong>Worked?</strong> You can describe a dot product geometrically (how aligned two vectors are).</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 2</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-12">▶ Open VS Code here</a></div>
+  <h2>Matrices + matrix multiplication</h2>
+  <div class="step">
+    <h4>1. Watch 3Blue1Brown's matrix multiplication video (10 min)</h4>
+    <p class="do">Open <a href="https://www.youtube.com/watch?v=XkY2DOUCWMU" target="_blank">3Blue1Brown — Matrix multiplication as composition</a>.</p>
+  </div>
+  <div class="step">
+    <h4>2. Create <code>02-matrices.ipynb</code></h4>
+    <pre><code>A = np.array([[1, 2, 3], [4, 5, 6]])      # (2, 3)
+B = np.array([[7, 8], [9, 10], [11, 12]])  # (3, 2)
+print("A @ B =\n", A @ B)
+print("shape:", (A @ B).shape)             # (2, 2)</code></pre>
+    <pre><code>print("transpose:\n", A.T)</code></pre>
+    <pre><code># Matrix-vector multiplication = a layer of a neural network
+M = np.array([[1, 2], [3, 4]])
+v = np.array([5, 6])
+print("M @ v =", M @ v)</code></pre>
+    <div class="verify"><strong>Worked?</strong> You can predict <code>(m,n) @ (n,p) → (m,p)</code> shapes.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 3</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-12">▶ Open VS Code here</a></div>
+  <h2>Derivatives intuition</h2>
+  <div class="step">
+    <h4>1. Watch 3B1B's calculus chapter 2 (17 min)</h4>
+    <p class="do">Open <a href="https://www.youtube.com/watch?v=9vKqVkMQHKk" target="_blank">3Blue1Brown — Essence of calculus, ch 2</a>.</p>
+  </div>
+  <div class="step">
+    <h4>2. Create <code>03-derivatives.ipynb</code></h4>
+    <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-3, 3, 200)
+y = x**2
+dy = 2 * x   # analytical derivative
+dy_num = np.gradient(y, x)   # numerical
+
+plt.plot(x, y, label="x²")
+plt.plot(x, dy, label="2x (analytical)")
+plt.plot(x, dy_num, "--", label="numerical")
+plt.legend(); plt.show()</code></pre>
+    <div class="verify"><strong>Worked?</strong> You can describe a derivative as "rate of change" or "local slope".</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 4</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-12">▶ Open VS Code here</a></div>
+  <h2>Gradients + chain rule</h2>
+  <div class="step">
+    <h4>Create <code>04-gradient.ipynb</code></h4>
+    <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+
+# f(x, y) = x² + y², gradient is [2x, 2y]
+x, y = np.meshgrid(np.linspace(-3, 3, 20), np.linspace(-3, 3, 20))
+gx = 2 * x; gy = 2 * y
+plt.quiver(x, y, gx, gy)
+plt.title("gradient of x² + y² points outward")
+plt.axis("equal"); plt.show()</code></pre>
+    <pre><code># Chain rule: d/dx sin(x²) = 2x cos(x²)
+import sympy as sp
+xs = sp.Symbol("x")
+f = sp.sin(xs**2)
+print("f =", f)
+print("f' =", sp.diff(f, xs))</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 5</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-12">▶ Open VS Code here</a></div>
+  <h2>Gradient descent in action</h2>
+  <div class="step">
+    <h4>Create <code>05-gradient-descent.ipynb</code></h4>
+    <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+
+# minimise f(x) = (x - 2)² ; gradient = 2(x - 2)
+def grad(x): return 2 * (x - 2)
+
+x = 0.0
+lr = 0.1
+trajectory = [x]
+for _ in range(50):
+    x = x - lr * grad(x)
+    trajectory.append(x)
+
+plt.plot(trajectory)
+plt.title(f"Converged to {x:.4f}")
+plt.xlabel("iteration"); plt.ylabel("x"); plt.show()</code></pre>
+    <pre><code># Try lr = 1.1 - watch it diverge
+x = 0.0; lr = 1.1
+traj = [x]
+for _ in range(20):
+    x = x - lr * grad(x); traj.append(x)
+plt.plot(traj); plt.title("Too-large learning rate diverges"); plt.show()</code></pre>
+    <div class="verify"><strong>Worked?</strong> First plot converges to ~2. Second blows up.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 6</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-12">▶ Open VS Code here</a></div>
+  <h2>Probability basics</h2>
+  <div class="step">
+    <h4>Create <code>06-probability.ipynb</code></h4>
+    <pre><code>import numpy as np
+
+flips = np.random.choice([0, 1], size=10000)
+print(f"empirical proportion of heads: {flips.mean():.4f}")</code></pre>
+    <pre><code>rolls = np.random.randint(1, 7, size=10000)
+print(f"mean: {rolls.mean():.4f}")  # expect ~3.5</code></pre>
+    <pre><code># Conditional: P(sum == 10 | first die == 6)
+d1 = np.random.randint(1, 7, size=100000)
+d2 = np.random.randint(1, 7, size=100000)
+mask = d1 == 6
+print((d1[mask] + d2[mask] == 10).mean())  # 1/6</code></pre>
+  </div>
+  <div class="step">
+    <h4>Read Bayes</h4>
+    <p class="do">Open <a href="https://betterexplained.com/articles/an-intuitive-and-short-explanation-of-bayes-theorem/" target="_blank">Bayes' Theorem (Better Explained)</a>. Note in <code>06-bayes.md</code> a worked example: a test that's 99% accurate, disease incidence 1%, what's P(disease | positive test)?</p>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 7</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-12">▶ Open VS Code here</a></div>
+  <h2>Statistics: mean, variance, normal, z-score</h2>
+  <div class="step">
+    <h4>Create <code>07-stats.ipynb</code></h4>
+    <pre><code>data = np.random.normal(loc=0, scale=1, size=10000)
+print(f"mean: {data.mean():.4f}, std: {data.std():.4f}")
+plt.hist(data, bins=50); plt.title("Standard normal"); plt.show()</code></pre>
+    <pre><code>data2 = np.random.normal(5, 2, size=10000)
+print(f"mean: {data2.mean():.4f}, std: {data2.std():.4f}")
+z = (data2 - data2.mean()) / data2.std()
+plt.hist(z, bins=50); plt.title("Z-score normalised"); plt.show()</code></pre>
+    <pre><code>print("5th percentile:", np.percentile(data, 5))
+print("95th percentile:", np.percentile(data, 95))</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<section class="mini-project">
+  <div class="block-head"><span class="block-num">Block 8 · Mini-project</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-12">▶ Open VS Code here</a></div>
+  <h2>2-layer neural network in NumPy</h2>
+  <p>No PyTorch, no fast.ai. Raw NumPy. The point is to feel every multiplication.</p>
+  <div class="step">
+    <h4>Create <code>nn-from-scratch.ipynb</code></h4>
+    <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+
+# Fake data: classify points by whether x+y &gt; 0
+X = np.random.randn(100, 2)
+y = (X[:, 0] + X[:, 1] &gt; 0).astype(int).reshape(-1, 1)
+
+# 2 inputs -&gt; 4 hidden (ReLU) -&gt; 1 output (sigmoid)
+W1 = np.random.randn(2, 4) * 0.5
+b1 = np.zeros((1, 4))
+W2 = np.random.randn(4, 1) * 0.5
+b2 = np.zeros((1, 1))
+
+def relu(x): return np.maximum(0, x)
+def sigmoid(x): return 1 / (1 + np.exp(-x))
+
+losses = []
+lr = 0.1
+for step in range(2000):
+    # forward
+    z1 = X @ W1 + b1
+    a1 = relu(z1)
+    z2 = a1 @ W2 + b2
+    y_hat = sigmoid(z2)
+
+    # binary cross-entropy
+    eps = 1e-12
+    loss = -np.mean(y * np.log(y_hat + eps) + (1 - y) * np.log(1 - y_hat + eps))
+    losses.append(loss)
+
+    # backward
+    dL_dz2 = (y_hat - y) / len(X)
+    dW2 = a1.T @ dL_dz2
+    db2 = dL_dz2.sum(axis=0, keepdims=True)
+    dL_da1 = dL_dz2 @ W2.T
+    dL_dz1 = dL_da1 * (z1 &gt; 0)
+    dW1 = X.T @ dL_dz1
+    db1 = dL_dz1.sum(axis=0, keepdims=True)
+
+    W1 -= lr * dW1; b1 -= lr * db1
+    W2 -= lr * dW2; b2 -= lr * db2
+
+plt.plot(losses); plt.xlabel("iteration"); plt.ylabel("loss"); plt.show()
+preds = (sigmoid(relu(X @ W1 + b1) @ W2 + b2) &gt; 0.5).astype(int)
+print(f"final accuracy: {(preds == y).mean():.4f}")</code></pre>
+    <div class="verify"><strong>Worked?</strong> Loss curve decreases, final accuracy &gt; 0.9.</div>
+  </div>
+  <div class="step">
+    <h4>Push to GitHub</h4>
+    <pre><code>git init
+echo .venv/ &gt; .gitignore
+echo .ipynb_checkpoints/ &gt;&gt; .gitignore
+git add nn-from-scratch.ipynb *.ipynb *.md .gitignore
+git commit -m "feat(ml-maths): nn from scratch + maths refresher (worksheet 12)"
+gh repo create ml-maths --public --source=. --remote=origin --push</code></pre>
+    <div class="verify"><strong>Worked?</strong> Live at <a href="https://github.com/Dave-Buckley/ml-maths" target="_blank">github.com/Dave-Buckley/ml-maths</a>.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<div class="footer-cta"><strong>Done? Tell Claude.</strong></div>
+</main>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
+const slug='12-ml-maths';
+document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb)=>{const key=`progress.${slug}.${cb.dataset.block}`;cb.checked=localStorage.getItem(key)==='1';cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');updateProgress();});});
+function updateProgress(){const all=document.querySelectorAll('input[type="checkbox"][data-block]');const done=[...all].filter(c=>c.checked).length;document.querySelector('.progress-fill').style.width=`${(done/all.length)*100}%`;}
+updateProgress();
+document.querySelectorAll('pre').forEach((pre)=>{const code=pre.querySelector('code');if(!code)return;const btn=document.createElement('button');btn.className='copy-btn';btn.type='button';btn.textContent='Copy';btn.addEventListener('click',async(e)=>{e.preventDefault();try{await navigator.clipboard.writeText(code.innerText);}catch{const ta=document.createElement('textarea');ta.value=code.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}btn.textContent='Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);});pre.appendChild(btn);});
+</script></body></html>

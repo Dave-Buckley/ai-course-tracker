@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 06 — Web Fundamentals · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>.step{margin:16px 0 22px;padding:16px 18px;background:var(--card-soft);border-radius:10px;border-left:3px solid var(--accent);}.step h4{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--fg);}.step .what,.step .why{color:var(--fg-soft);font-size:14px;margin:0 0 8px;}.step .why{color:var(--fg-muted);font-size:13px;font-style:italic;}.step .do{font-size:13px;color:var(--fg-soft);margin:8px 0 6px;font-weight:600;}.step .verify{margin-top:12px;padding:10px 14px;background:var(--success-soft);border-radius:8px;color:var(--success-fg);font-size:13px;}.launcher{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:20px 0 32px;}.launcher a{display:flex;flex-direction:column;padding:14px 18px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-fg);text-decoration:none;font-weight:600;}.launcher a small{font-weight:400;font-size:12px;color:var(--fg-soft);margin-top:4px;}</style>
+</head><body><main>
+
+<nav class="nav"><a href="05-dsa-patterns.html">← Worksheet 05</a><span style="color:var(--fg-muted)">Worksheet 06 of 17</span><a href="07-typescript.html">Next: TypeScript →</a></nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>Web Fundamentals</h1>
+<p class="meta"><span>8 focus blocks</span><span>~4 hours total</span><span>Phase 2 prep</span><span>Reference: <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview" target="_blank">MDN HTTP overview</a></span></p>
+<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+
+<div class="callout info">
+  <span class="callout-label">What this covers</span>
+  How "type a URL → page loads" actually works. DNS, TCP, HTTP, HTTPS, REST. Mostly using <code>curl</code> in PowerShell. Mini-project is a portfolio blog post explaining all this — covers the NET-02 deliverable.
+</div>
+
+<p class="lead">Mostly note-taking + curl experiments. Light on coding, heavy on understanding.</p>
+
+<h2>The full journey</h2>
+<div class="mermaid">
+sequenceDiagram
+    participant U as Browser
+    participant D as DNS resolver
+    participant S as Web server
+    U->>D: Where is example.com?
+    D-->>U: 93.184.216.34
+    U->>S: TCP SYN
+    S-->>U: TCP SYN-ACK
+    U->>S: TCP ACK
+    Note over U,S: TLS handshake (HTTPS)
+    U->>S: HTTP GET /
+    S-->>U: 200 OK + HTML
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Click <strong>Open VS Code here</strong> to launch VS Code on this worksheet's folder. The "terminal" or "PowerShell" referred to throughout this worksheet is <strong>VS Code's integrated terminal panel</strong> — open it via <strong>View → Terminal</strong> at the top menu. Type git/python/curl commands there. No separate window needed.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-06">▶ Open VS Code here<small>opens VS Code on <code>06-web-fundamentals</code>.</small></a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/06-web-fundamentals/">Open the folder in Explorer</a>
+</div>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 1</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-06">▶ Open VS Code here</a></div>
+  <h2>DNS</h2>
+  <div class="step">
+    <h4>1. Look up an A record</h4>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>nslookup example.com</code></pre>
+    <div class="verify"><strong>Worked?</strong> Output shows the IP address (an A record).</div>
+  </div>
+  <div class="step">
+    <h4>2. Look up MX records (mail servers)</h4>
+    <pre><code>nslookup -type=MX gmail.com</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. Read + take notes</h4>
+    <p class="do">Open <a href="https://www.cloudflare.com/learning/dns/what-is-dns/" target="_blank">Cloudflare's "What is DNS"</a> (5 min). Create <code>01-dns.md</code> in VS Code:</p>
+    <pre><code># DNS notes
+
+- DNS converts a domain (example.com) into an IP (93.184.216.34).
+- Record types: A (IPv4), AAAA (IPv6), CNAME (alias), MX (mail).
+- Caching exists at every level (browser, OS, ISP) — that's why DNS feels instant.
+- TTL = how long a record can be cached before re-checking.</code></pre>
+    <p class="do">Save.</p>
+    <div class="verify"><strong>Worked?</strong> You can describe in one sentence what happens at the DNS step.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 2</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-06">▶ Open VS Code here</a></div>
+  <h2>TCP basics</h2>
+  <div class="mermaid">
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+    C->>S: SYN
+    S-->>C: SYN-ACK
+    C->>S: ACK
+    Note over C,S: Connection established
+</div>
+  <div class="step">
+    <h4>Read + notes</h4>
+    <p class="do">Open <a href="https://developer.mozilla.org/en-US/docs/Glossary/TCP" target="_blank">MDN's TCP overview</a> (3 min). Create <code>02-tcp.md</code>:</p>
+    <pre><code># TCP notes
+
+- 3-way handshake (SYN, SYN-ACK, ACK) establishes a reliable connection.
+- TCP guarantees ordering and delivery (retransmits lost packets). UDP doesn't.
+- Port = 16-bit number identifying the application: 80 = HTTP, 443 = HTTPS, 22 = SSH.</code></pre>
+    <p class="do">Save.</p>
+    <div class="verify"><strong>Worked?</strong> You understand TCP gives you a connection; HTTP runs on top.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 3</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-06">▶ Open VS Code here</a></div>
+  <h2>HTTP requests with curl</h2>
+  <div class="step">
+    <h4>1. Verbose GET</h4>
+    <pre><code>curl -v https://example.com</code></pre>
+    <p style="font-size:13px;color:var(--fg-muted);">Request line: <code>GET / HTTP/2</code>. Then headers. Then a blank line. Then the response body.</p>
+  </div>
+  <div class="step">
+    <h4>2. POST with a JSON body</h4>
+    <pre><code>curl -X POST -H "Content-Type: application/json" -d '{"foo":"bar"}' https://httpbin.org/post</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. PUT, DELETE, HEAD</h4>
+    <pre><code>curl -X PUT -d 'hello' https://httpbin.org/put
+curl -X DELETE https://httpbin.org/delete
+curl -I https://example.com</code></pre>
+    <div class="verify"><strong>Worked?</strong> Each command shows different request methods + responses. <code>-I</code> shows headers only.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 4</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-06">▶ Open VS Code here</a></div>
+  <h2>HTTP methods + status codes</h2>
+  <div class="step">
+    <h4>1. Methods table — <code>03-methods.md</code></h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>| Method  | Purpose          | Idempotent? | Body? |
+|---------|------------------|-------------|-------|
+| GET     | Read             | Yes         | No    |
+| POST    | Create           | No          | Yes   |
+| PUT     | Replace          | Yes         | Yes   |
+| PATCH   | Partial update   | No          | Yes   |
+| DELETE  | Remove           | Yes         | No    |
+| HEAD    | Headers only     | Yes         | No    |
+| OPTIONS | Allowed methods  | Yes         | No    |</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Status codes table — <code>04-status.md</code></h4>
+    <p class="do">Create. Type:</p>
+    <pre><code># Status codes
+
+| Code | Meaning             | When |
+|------|---------------------|------|
+| 200  | OK                  | Successful GET |
+| 201  | Created             | Successful POST |
+| 204  | No Content          | Successful DELETE |
+| 301  | Moved Permanently   | Permanent redirect |
+| 302  | Found               | Temporary redirect |
+| 304  | Not Modified        | Cache valid |
+| 400  | Bad Request         | Client sent garbage |
+| 401  | Unauthorized        | Need to log in |
+| 403  | Forbidden           | Logged in but not allowed |
+| 404  | Not Found           | Resource doesn't exist |
+| 422  | Unprocessable       | Validation failed |
+| 429  | Too Many Requests   | Rate limited |
+| 500  | Server Error        | Server crashed |
+| 502  | Bad Gateway         | Upstream broken |
+| 503  | Service Unavailable | Server overloaded |</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. Trigger a 404</h4>
+    <pre><code>curl -v https://example.com/does-not-exist</code></pre>
+    <div class="verify"><strong>Worked?</strong> Status line shows <code>HTTP/2 404</code>.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 5</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-06">▶ Open VS Code here</a></div>
+  <h2>Headers + cookies</h2>
+  <div class="step">
+    <h4>1. Headers reference — <code>05-headers.md</code></h4>
+    <p class="do">Create. Type:</p>
+    <pre><code># Common headers
+
+Request:
+- Accept              — what content types we want back
+- Authorization       — credentials (Bearer token, Basic auth)
+- User-Agent          — what client we are
+- Cookie              — sends session info to server
+
+Response:
+- Content-Type        — what type of body we're sending
+- Cache-Control       — how long this response can be cached
+- Set-Cookie          — server sets a cookie on the client</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Send + receive cookies</h4>
+    <pre><code>curl -c cookies.txt -b cookies.txt "https://httpbin.org/cookies/set?session=abc123"
+curl -b cookies.txt https://httpbin.org/cookies</code></pre>
+    <p class="do">Open <code>cookies.txt</code> in VS Code — the cookie was saved.</p>
+    <div class="verify"><strong>Worked?</strong> Second request shows <code>session=abc123</code> in the response.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 6</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-06">▶ Open VS Code here</a></div>
+  <h2>HTTPS / TLS</h2>
+  <div class="mermaid">
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+    C->>S: ClientHello (cipher suites)
+    S-->>C: ServerHello + cert
+    C->>C: Verify cert chain
+    C->>S: Encrypted key exchange
+    Note over C,S: Encrypted channel established
+</div>
+  <div class="step">
+    <h4>1. Read about TLS handshake</h4>
+    <p class="do">Open <a href="https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake/" target="_blank">Cloudflare's TLS handshake explainer</a>. Read.</p>
+  </div>
+  <div class="step">
+    <h4>2. Notes — <code>06-https.md</code></h4>
+    <p class="do">Create. Type:</p>
+    <pre><code># HTTPS / TLS notes
+
+- TLS provides: encryption (privacy), integrity (no tampering), authentication (server is who it claims).
+- A certificate is a signed statement: "this public key belongs to example.com".
+- A Certificate Authority (CA) signs certs. Browsers ship trusting ~150 CAs.
+- Self-signed cert = signed by its own private key (no CA). Browsers warn because there's no chain of trust.
+- Mixed content = HTTPS page loading HTTP resources. Browsers block by default.</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 7</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-06">▶ Open VS Code here</a></div>
+  <h2>REST conventions</h2>
+  <div class="mermaid">
+flowchart LR
+    A[Resource: users] --> B["GET /users → list"]
+    A --> C["POST /users → create"]
+    A --> D["GET /users/42 → read one"]
+    A --> E["PATCH /users/42 → update"]
+    A --> F["DELETE /users/42 → delete"]
+</div>
+  <div class="step">
+    <h4>1. REST notes — <code>07-rest.md</code></h4>
+    <p class="do">Create. Type:</p>
+    <pre><code># REST principles
+
+- Resources have URLs (nouns: /users, not /getUsers).
+- HTTP methods map to CRUD: GET=read, POST=create, PUT/PATCH=update, DELETE=delete.
+- Stateless — each request carries everything needed (auth tokens, etc.).
+- Idempotent methods (GET, PUT, DELETE) can be safely retried.
+- JSON is the de-facto media type.</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Hit a real REST API</h4>
+    <pre><code>curl https://api.github.com/users/octocat
+curl "https://api.github.com/users/octocat/repos?per_page=3"</code></pre>
+    <div class="verify"><strong>Worked?</strong> JSON response with the user's profile and 3 repos.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<section class="mini-project">
+  <div class="block-head"><span class="block-num">Block 8 · Mini-project</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-portfolio">▶ Open portfolio repo</a></div>
+  <h2>NET-02 portfolio blog post</h2>
+  <p>Drafting the post that lives on davidbuckley.vercel.app explaining everything you just learned.</p>
+  <div class="step">
+    <h4>1. Open your portfolio repo</h4>
+    <p class="do">Click the launcher above. Navigate to <code>content/journal/</code>.</p>
+  </div>
+  <div class="step">
+    <h4>2. Create the post</h4>
+    <p class="do">New file: <code>2026-04-XX-what-happens-when-you-type-a-url.md</code> (use today's date). Frontmatter + body:</p>
+    <pre><code>---
+title: "What happens when you type a URL and press Enter"
+date: 2026-04-XX
+summary: "DNS, TCP, TLS, HTTP — the full stack of what makes a web request happen."
+---
+
+When you visit https://davidbuckley.vercel.app, six things happen in &lt;1 second:
+
+1. **DNS lookup** — your browser asks "where is davidbuckley.vercel.app?"...
+2. **TCP handshake** — once your browser has the IP, it opens a connection on port 443...
+3. **TLS handshake** — for HTTPS, the client and server agree on encryption...
+4. **HTTP GET /** — the browser sends a request line + headers...
+5. **Server responds** — Vercel sends back HTML with status 200...
+6. **Browser fires more GETs** — for CSS, JS, images...</code></pre>
+    <p class="do">Expand each section to 3-4 sentences each, drawing on your worksheet notes.</p>
+  </div>
+  <div class="step">
+    <h4>3. Commit + push</h4>
+    <pre><code>git checkout -b feat/net-02-blog-post
+git add content/journal/
+git commit -m "feat: add NET-02 web fundamentals blog post"
+git push -u origin feat/net-02-blog-post</code></pre>
+    <p class="do">Open the PR URL in Chrome, squash and merge.</p>
+    <div class="verify"><strong>Worked?</strong> The post is live at <code>davidbuckley.vercel.app/journal/...</code>. Counts towards NET-02.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<div class="footer-cta"><strong>Done? Tell Claude.</strong></div>
+</main>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
+const slug='06-web-fundamentals';
+document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb)=>{const key=`progress.${slug}.${cb.dataset.block}`;cb.checked=localStorage.getItem(key)==='1';cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');updateProgress();});});
+function updateProgress(){const all=document.querySelectorAll('input[type="checkbox"][data-block]');const done=[...all].filter(c=>c.checked).length;document.querySelector('.progress-fill').style.width=`${(done/all.length)*100}%`;}
+updateProgress();
+document.querySelectorAll('pre').forEach((pre)=>{const code=pre.querySelector('code');if(!code)return;const btn=document.createElement('button');btn.className='copy-btn';btn.type='button';btn.textContent='Copy';btn.addEventListener('click',async(e)=>{e.preventDefault();try{await navigator.clipboard.writeText(code.innerText);}catch{const ta=document.createElement('textarea');ta.value=code.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}btn.textContent='Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);});pre.appendChild(btn);});
+</script></body></html>

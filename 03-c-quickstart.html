@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 03 — C Quickstart · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .step { margin: 16px 0 22px; padding: 16px 18px; background: var(--card-soft); border-radius: 10px; border-left: 3px solid var(--accent); }
+  .step h4 { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--fg); }
+  .step .what { color: var(--fg-soft); font-size: 14px; margin: 0 0 8px; }
+  .step .why { color: var(--fg-muted); font-size: 13px; font-style: italic; margin: 0 0 12px; }
+  .step .do { font-size: 13px; color: var(--fg-soft); margin: 8px 0 6px; font-weight: 600; }
+  .step .verify { margin-top: 12px; padding: 10px 14px; background: var(--success-soft); border-radius: 8px; color: var(--success-fg); font-size: 13px; }
+  .step .verify strong { color: var(--success-fg); }
+  .launcher { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 20px 0 32px; }
+  .launcher a { display: flex; flex-direction: column; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent-fg); text-decoration: none; font-weight: 600; }
+  .launcher a small { font-weight: 400; font-size: 12px; color: var(--fg-soft); margin-top: 4px; }
+</style>
+</head>
+<body>
+<main>
+
+<nav class="nav">
+  <a href="02-python-basics.html">← Worksheet 02</a>
+  <span style="color: var(--fg-muted)">Worksheet 03 of 17</span>
+  <a href="04-python-intermediate.html">Next: Python Intermediate →</a>
+</nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>C Quickstart</h1>
+<p class="meta">
+  <span>8 focus blocks</span>
+  <span>~4 hours total</span>
+  <span>Phase 2 prep</span>
+  <span>Reference: <a href="https://cs50.harvard.edu/x/2024/weeks/1/" target="_blank">CS50x Week 1</a></span>
+</p>
+
+<div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+
+<div class="callout info">
+  <span class="callout-label">What is C, and why are we touching it?</span>
+  C is an older, lower-level language than Python. Where Python hides things like memory and types, C exposes them — you have to think about pointers, allocate memory by hand, and pick exact integer sizes. CS50x uses C as a teaching language for those reasons. After this worksheet you'll have enough C to follow the lectures and you'll appreciate Python a LOT more.
+</div>
+
+<p class="lead">
+  No huge ambitions here — just enough C to follow CS50x weeks 1-5. The mini-project is a Caesar cipher, a CS50 classic.
+</p>
+
+<h2>What this worksheet covers</h2>
+<div class="mermaid">
+flowchart TD
+    Root["<b>C Quickstart</b>"]:::root
+    Root --> A["<b>Toolchain</b><br/>gcc · compile · run"]
+    Root --> B["<b>Types</b><br/>int · float · char · arrays"]
+    Root --> C["<b>Control flow</b><br/>if · for · while · switch"]
+    Root --> D["<b>Functions</b><br/>prototypes · scope"]
+    Root --> E["<b>Pointers</b><br/>address · dereference"]
+    Root --> F["<b>Memory</b><br/>stack · heap · malloc · free"]
+    classDef root fill:#4f46e5,color:#ffffff,stroke:#4f46e5,stroke-width:2px
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Click <strong>Open VS Code here</strong> to launch VS Code on this worksheet's folder. The "terminal" or "PowerShell" referred to throughout this worksheet is <strong>VS Code's integrated terminal panel</strong> — open it via <strong>View → Terminal</strong> at the top menu. Type git/python/curl commands there. No separate window needed.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-03">▶ Open VS Code here<small>opens VS Code on <code>03-c-quickstart</code>.</small></a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/03-c-quickstart/">Open the folder in Explorer<small>see your .c files and compiled binaries.</small></a>
+</div>
+
+<section class="block">
+  <div class="block-head">
+    <span class="block-num">Block 1</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-03">▶ Open VS Code here</a>
+  </div>
+  <h2>Toolchain + first program</h2>
+
+  <div class="callout info">
+    <span class="callout-label">Working folder</span>
+    Everything in Worksheet 03 lives in <code>C:\Users\David\Documents\AI Course\03-c-quickstart\</code>.
+  </div>
+
+  <div class="step">
+    <h4>1. Confirm a C compiler is installed</h4>
+    <p class="what"><strong>What:</strong> check whether <code>gcc</code> (the GNU C Compiler) is on your computer.</p>
+    <p class="do">In VS Code's terminal:</p>
+    <pre><code>gcc --version</code></pre>
+    <div class="verify"><strong>Worked?</strong> You see a version line like <code>gcc.exe (Rev1, Built by MSYS2 project) 13.x.x</code>. If not installed: install <a href="https://www.msys2.org/" target="_blank">MSYS2</a> following their instructions, OR install WSL (<code>wsl --install</code> in admin PowerShell) for a Linux environment with gcc bundled.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. Write your first C program: <code>hello.c</code></h4>
+    <p class="do" style="margin-bottom:8px;">In VS Code, hover over <strong>03-C-QUICKSTART</strong>, click "New File", name it <code>hello.c</code>. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    printf("hello, world\n");
+    return 0;
+}</code></pre>
+    <p class="do">Save with <kbd>Ctrl</kbd>+<kbd>S</kbd>.</p>
+    <p style="font-size: 12px; color: var(--fg-muted);">File location: <code>C:\Users\David\Documents\AI Course\03-c-quickstart\hello.c</code></p>
+  </div>
+
+  <div class="step">
+    <h4>3. Compile and run</h4>
+    <p class="what"><strong>What:</strong> turn the .c text file into an .exe binary (compile), then run the binary.</p>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>gcc hello.c -o hello
+./hello</code></pre>
+    <p style="font-size:13px; color: var(--fg-muted);"><code>-o hello</code> names the output file <code>hello</code> (otherwise it'd be <code>a.exe</code>). <code>./hello</code> runs it from the current folder.</p>
+    <div class="verify"><strong>Worked?</strong> Prints <code>hello, world</code> in the terminal.</div>
+  </div>
+
+  <div class="step">
+    <h4>4. Compile with warnings on</h4>
+    <p class="why"><strong>Why:</strong> warnings catch bugs before they bite. Always compile with them enabled.</p>
+    <p class="do">Recompile:</p>
+    <pre><code>gcc -Wall -Wextra hello.c -o hello</code></pre>
+    <div class="verify"><strong>Worked?</strong> No warnings printed (clean code). If warnings appear, fix them.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 2</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-03">▶ Open VS Code here</a></div>
+  <h2>Types and printf format specifiers</h2>
+
+  <div class="step">
+    <h4>1. <code>02-types.c</code> — int, float, double, char</h4>
+    <p class="what"><strong>What:</strong> C makes you declare a type for every variable, unlike Python.</p>
+    <p class="do">Create <code>02-types.c</code>. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int age = 32;
+    float ratio = 3.14f;
+    double precise = 3.141592653589793;
+    char letter = 'A';
+    printf("int: %d\n", age);
+    printf("float: %f\n", ratio);
+    printf("double: %lf\n", precise);
+    printf("char: %c\n", letter);
+    return 0;
+}</code></pre>
+    <p class="do">Compile + run:</p>
+    <pre><code>gcc -Wall 02-types.c -o 02-types
+./02-types</code></pre>
+    <div class="verify"><strong>Worked?</strong> Four lines printed with each value.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. Format specifier cheat-sheet</h4>
+    <table>
+      <tr><th>Specifier</th><th>Type</th></tr>
+      <tr><td><code>%d</code></td><td>int</td></tr>
+      <tr><td><code>%f</code></td><td>float</td></tr>
+      <tr><td><code>%lf</code></td><td>double</td></tr>
+      <tr><td><code>%c</code></td><td>char</td></tr>
+      <tr><td><code>%s</code></td><td>string (char*)</td></tr>
+      <tr><td><code>%p</code></td><td>pointer (address)</td></tr>
+      <tr><td><code>%x</code></td><td>hex</td></tr>
+    </table>
+  </div>
+
+  <div class="step">
+    <h4>3. <code>03-overflow.c</code> — int overflow</h4>
+    <p class="why"><strong>Why:</strong> C ints are fixed-width. Overflow is silent and produces wrong answers.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int x = 2147483647;   // max 32-bit int
+    x = x + 1;
+    printf("%d\n", x);
+    return 0;
+}</code></pre>
+    <p class="do">Compile + run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints a large negative number — the int wrapped around. Python doesn't do this; C does.</div>
+  </div>
+
+  <div class="step">
+    <h4>4. <code>04-truncation.c</code> — int division</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int a = 7 / 2;
+    float b = 7.0f / 2.0f;
+    printf("int division: %d\n", a);
+    printf("float division: %f\n", b);
+    return 0;
+}</code></pre>
+    <p class="do">Compile + run.</p>
+    <div class="verify"><strong>Worked?</strong> int division prints 3 (truncated), float division prints 3.5.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 3</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-03">▶ Open VS Code here</a></div>
+  <h2>Control flow + scanf</h2>
+
+  <div class="step">
+    <h4>1. <code>05-conditionals.c</code> — read a number, classify it</h4>
+    <p class="what"><strong>What:</strong> <code>scanf</code> reads from the user. Note the <code>&amp;</code> before the variable — that's the address-of operator (more in Block 6).</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int n;
+    printf("Type a number: ");
+    scanf("%d", &amp;n);
+    if (n &lt; 0)       printf("negative\n");
+    else if (n == 0) printf("zero\n");
+    else             printf("positive\n");
+    return 0;
+}</code></pre>
+    <p class="do">Compile + run. Type a number when prompted.</p>
+    <div class="verify"><strong>Worked?</strong> Classifies whatever you typed.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. <code>06-while.c</code> — loop with while</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int i = 1;
+    while (i &lt;= 10) {
+        printf("%d\n", i);
+        i++;
+    }
+    return 0;
+}</code></pre>
+    <p class="do">Compile + run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints 1 through 10 on separate lines.</div>
+  </div>
+
+  <div class="step">
+    <h4>3. <code>07-for.c</code> — same with for</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    for (int i = 1; i &lt;= 10; i++) {
+        printf("%d\n", i);
+    }
+    return 0;
+}</code></pre>
+    <p class="do">Compile + run.</p>
+    <div class="verify"><strong>Worked?</strong> Same output, fewer lines of code.</div>
+  </div>
+
+  <div class="step">
+    <h4>4. <code>08-switch.c</code> — vowel or consonant</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    char c;
+    printf("Type a letter: ");
+    scanf(" %c", &amp;c);   // space before %c skips whitespace
+    switch (c) {
+        case 'a': case 'e': case 'i': case 'o': case 'u':
+        case 'A': case 'E': case 'I': case 'O': case 'U':
+            printf("vowel\n"); break;
+        default:
+            printf("consonant\n");
+    }
+    return 0;
+}</code></pre>
+    <p class="do">Compile + run.</p>
+    <div class="verify"><strong>Worked?</strong> Correctly classifies vowels and consonants.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 4</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-03">▶ Open VS Code here</a></div>
+  <h2>Functions + prototypes</h2>
+
+  <div class="step">
+    <h4>1. <code>09-functions.c</code> — your own function</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+int square(int x)
+{
+    return x * x;
+}
+
+int main(void)
+{
+    printf("%d\n", square(7));
+    return 0;
+}</code></pre>
+    <p class="do">Compile + run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints 49.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. <code>10-prototype.c</code> — forward declaration</h4>
+    <p class="why"><strong>Why:</strong> C reads files top-to-bottom. If you call a function before it's defined, you must declare its signature (a "prototype") at the top.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+int square(int);   // prototype
+
+int main(void)
+{
+    printf("%d\n", square(7));
+    return 0;
+}
+
+int square(int x)
+{
+    return x * x;
+}</code></pre>
+    <p class="do">Compile + run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints 49. Try removing the prototype line — observe the compile error.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 5</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-03">▶ Open VS Code here</a></div>
+  <h2>Arrays and strings</h2>
+
+  <div class="mermaid">
+flowchart LR
+    A["char name[6]"] --> B["[D][a][v][e][\\0][?]"]
+    B --> C[Null terminator<br/>marks end]
+</div>
+
+  <div class="step">
+    <h4>1. <code>11-arrays.c</code> — int array</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int nums[5] = {1, 2, 3, 4, 5};
+    for (int i = 0; i &lt; 5; i++) {
+        printf("%d ", nums[i]);
+    }
+    printf("\n");
+    return 0;
+}</code></pre>
+    <p class="do">Compile + run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints <code>1 2 3 4 5</code>.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. <code>12-strings.c</code> — strings are char arrays</h4>
+    <p class="what"><strong>What:</strong> in C, a string is just an array of characters ending with the null character <code>\0</code>.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    char name[] = "Dave";
+    printf("name: %s\n", name);
+    int i = 0;
+    while (name[i] != '\0') {
+        printf("char %d: %c\n", i, name[i]);
+        i++;
+    }
+    return 0;
+}</code></pre>
+    <p class="do">Compile + run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints <code>Dave</code>, then each character on its own line.</div>
+  </div>
+
+  <div class="step">
+    <h4>3. <code>13-string-len.c</code> — write your own strlen</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+int my_strlen(char s[])
+{
+    int n = 0;
+    while (s[n] != '\0') n++;
+    return n;
+}
+
+int main(void)
+{
+    printf("%d\n", my_strlen("Hello, world!"));
+    return 0;
+}</code></pre>
+    <p class="do">Compile + run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints 13.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 6</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-03">▶ Open VS Code here</a></div>
+  <h2>Pointers</h2>
+
+  <div class="callout info">
+    <span class="callout-label">What's a pointer?</span>
+    A pointer is a variable that holds the address of another variable. Two operators: <code>&amp;x</code> means "the address of x", <code>*p</code> means "the value at the address p points to". Once you grok these two, pointers click.
+  </div>
+
+  <div class="mermaid">
+flowchart LR
+    A["int x = 42<br/>(at address 0x1A)"] --> B["int *p = &amp;x<br/>(p holds 0x1A)"]
+    B -->|"*p reads x"| A
+</div>
+
+  <div class="step">
+    <h4>1. <code>14-pointer-basic.c</code> — address and dereference</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int x = 42;
+    int *p = &amp;x;
+    printf("address of x: %p\n", (void*)&amp;x);
+    printf("p holds:      %p\n", (void*)p);
+    printf("*p (value):   %d\n", *p);
+    return 0;
+}</code></pre>
+    <p class="do">Compile + run.</p>
+    <div class="verify"><strong>Worked?</strong> First two addresses are equal; <code>*p</code> is 42.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. <code>15-pointer-modify.c</code> — change a value through a pointer</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+
+void increment(int *n)
+{
+    (*n)++;
+}
+
+int main(void)
+{
+    int x = 10;
+    printf("before: %d\n", x);
+    increment(&amp;x);
+    printf("after:  %d\n", x);
+    return 0;
+}</code></pre>
+    <p class="do">Compile + run.</p>
+    <div class="verify"><strong>Worked?</strong> before: 10, after: 11. The function modified <code>x</code> via the pointer.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 7</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-03">▶ Open VS Code here</a></div>
+  <h2>Heap memory: malloc + free</h2>
+
+  <div class="callout warn">
+    <span class="callout-label">The C rule</span>
+    Every <code>malloc</code> needs exactly one <code>free</code>. Forget to free → memory leak. Free twice → crash. This is why memory bugs are common in C and why higher-level languages exist.
+  </div>
+
+  <div class="step">
+    <h4>1. <code>16-malloc.c</code> — allocate, use, free</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main(void)
+{
+    int *arr = malloc(5 * sizeof(int));
+    if (arr == NULL) return 1;
+    for (int i = 0; i &lt; 5; i++) arr[i] = i * 10;
+    for (int i = 0; i &lt; 5; i++) printf("%d ", arr[i]);
+    printf("\n");
+    free(arr);
+    return 0;
+}</code></pre>
+    <p class="do">Compile + run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints <code>0 10 20 30 40</code>. The memory was on the heap; <code>free</code> returned it.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<section class="mini-project">
+  <div class="block-head"><span class="block-num">Block 8 · Mini-project</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-03">▶ Open VS Code here</a></div>
+  <h2>Caesar cipher: <code>caesar.c</code></h2>
+  <p>A classic CS50 exercise. Read a string and a key from command-line arguments, shift every letter by the key.</p>
+
+  <div class="step">
+    <h4>1. Create <code>caesar.c</code></h4>
+    <p class="do">Type:</p>
+    <pre><code>#include &lt;ctype.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+int main(int argc, char *argv[])
+{
+    if (argc != 3) {
+        printf("Usage: caesar &lt;text&gt; &lt;key&gt;\n");
+        return 1;
+    }
+    char *text = argv[1];
+    int key = atoi(argv[2]);
+    for (int i = 0, n = strlen(text); i &lt; n; i++) {
+        char c = text[i];
+        if (isupper(c))      putchar('A' + (c - 'A' + key) % 26);
+        else if (islower(c)) putchar('a' + (c - 'a' + key) % 26);
+        else                 putchar(c);
+    }
+    putchar('\n');
+    return 0;
+}</code></pre>
+  </div>
+
+  <div class="step">
+    <h4>2. Compile + test</h4>
+    <pre><code>gcc -Wall -Wextra caesar.c -o caesar
+./caesar HELLO 3
+./caesar "World" 13</code></pre>
+    <div class="verify"><strong>Worked?</strong> First prints <code>KHOOR</code>, second prints <code>Jbeyq</code>.</div>
+  </div>
+
+  <div class="step">
+    <h4>3. Push to GitHub</h4>
+    <pre><code>git init
+echo "*.exe" &gt; .gitignore
+echo "caesar" &gt;&gt; .gitignore
+git add caesar.c .gitignore
+git commit -m "feat(c): caesar cipher (worksheet 03)"
+gh repo create c-quickstart --public --source=. --remote=origin --push</code></pre>
+    <div class="verify"><strong>Worked?</strong> Live at <a href="https://github.com/Dave-Buckley/c-quickstart" target="_blank">github.com/Dave-Buckley/c-quickstart</a>.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<div class="footer-cta">
+  <strong>Done? Tell Claude.</strong>
+  <p>Open Claude from the hub and say: "I've finished Worksheet 03." Claude updates the master roadmap.</p>
+</div>
+
+</main>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
+  const slug = '03-c-quickstart';
+  document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb) => {
+    const key = `progress.${slug}.${cb.dataset.block}`;
+    cb.checked = localStorage.getItem(key) === '1';
+    cb.addEventListener('change', () => { localStorage.setItem(key, cb.checked ? '1' : '0'); updateProgress(); });
+  });
+  function updateProgress() { const all = document.querySelectorAll('input[type="checkbox"][data-block]'); const done = [...all].filter(c => c.checked).length; document.querySelector('.progress-fill').style.width = `${(done/all.length)*100}%`; }
+  updateProgress();
+  document.querySelectorAll('pre').forEach((pre) => {
+    const code = pre.querySelector('code'); if (!code) return;
+    const btn = document.createElement('button'); btn.className='copy-btn'; btn.type='button'; btn.textContent='Copy';
+    btn.addEventListener('click', async (e) => { e.preventDefault(); const text = code.innerText; try { await navigator.clipboard.writeText(text); } catch { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);} btn.textContent='Copied'; btn.classList.add('copied'); setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500); });
+    pre.appendChild(btn);
+  });
+</script>
+</body>
+</html>

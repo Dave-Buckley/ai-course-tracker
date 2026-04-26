@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 13 — fast.ai Prep · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>.step{margin:16px 0 22px;padding:16px 18px;background:var(--card-soft);border-radius:10px;border-left:3px solid var(--accent);}.step h4{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--fg);}.step .what,.step .why{color:var(--fg-soft);font-size:14px;margin:0 0 8px;}.step .why{color:var(--fg-muted);font-size:13px;font-style:italic;}.step .do{font-size:13px;color:var(--fg-soft);margin:8px 0 6px;font-weight:600;}.step .verify{margin-top:12px;padding:10px 14px;background:var(--success-soft);border-radius:8px;color:var(--success-fg);font-size:13px;}.launcher{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:20px 0 32px;}.launcher a{display:flex;flex-direction:column;padding:14px 18px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-fg);text-decoration:none;font-weight:600;}.launcher a small{font-weight:400;font-size:12px;color:var(--fg-soft);margin-top:4px;}</style>
+</head><body><main>
+
+<nav class="nav"><a href="12-ml-maths.html">← Worksheet 12</a><span style="color:var(--fg-muted)">Worksheet 13 of 17</span><a href="14-python-apis.html">Next: Python APIs →</a></nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>fast.ai Prep (PyTorch + workflow)</h1>
+<p class="meta"><span>8 focus blocks</span><span>~4 hours total</span><span>Phase 4 prep</span><span>Reference: <a href="https://docs.pytorch.org/tutorials/" target="_blank">PyTorch tutorials</a></span></p>
+<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+
+<div class="callout info"><span class="callout-label">Why this exists</span>fast.ai Lesson 1 is a tour. Lesson 2 dives into PyTorch internals — Datasets, DataLoaders, training loops. This worksheet builds the muscle memory for those before you press play. Use Kaggle or Paperspace if you don't have a GPU; CPU works for everything in this worksheet.</div>
+
+<p class="lead">Mini-project: a custom 2-class image classifier you trained on photos you grabbed.</p>
+
+<h2>The training loop you'll write 100 times</h2>
+<div class="mermaid">
+flowchart LR
+    A[Sample batch] --> B[forward] --> C[loss] --> D[backward] --> E[optimizer step] --> F[zero grad] --> A
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Click <strong>Open VS Code here</strong> to launch VS Code on this worksheet's folder. The "terminal" referred to throughout is <strong>VS Code's integrated terminal panel</strong> — open it via <strong>View → Terminal</strong>. Notebook cells run inside VS Code too — no separate window needed.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-13">▶ Open VS Code here<small>opens VS Code on <code>13-fastai-prep</code>.</small></a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/13-fastai-prep/">Open the folder in Explorer</a>
+</div>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 1</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-13">▶ Open VS Code here</a></div>
+  <h2>Setup</h2>
+  <div class="step">
+    <h4>1. Install PyTorch (CPU build)</h4>
+    <pre><code>cd "C:\Users\David\Documents\AI Course\13-fastai-prep"
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install torch torchvision matplotlib jupyter</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Confirm import works</h4>
+    <p class="do">In VS Code, create <code>00-setup.ipynb</code>. Type:</p>
+    <pre><code>import torch
+print(torch.__version__)
+print("cuda?", torch.cuda.is_available())</code></pre>
+    <div class="verify"><strong>Worked?</strong> Prints version and "False" for cuda (CPU is fine).</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 2</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-13">▶ Open VS Code here</a></div>
+  <h2>Tensors</h2>
+  <div class="step">
+    <h4>Create <code>01-tensors.ipynb</code></h4>
+    <pre><code>import torch
+t = torch.tensor([[1, 2, 3], [4, 5, 6]])
+print(t, t.shape, t.dtype)</code></pre>
+    <pre><code>print(torch.zeros(2, 3))
+print(torch.ones(2, 2))
+print(torch.randn(3))</code></pre>
+    <pre><code># NumPy interop
+import numpy as np
+arr = np.array([1, 2, 3])
+t = torch.from_numpy(arr)
+print(t)
+print(t.numpy())</code></pre>
+    <pre><code># Operations
+a = torch.tensor([1.0, 2.0, 3.0])
+b = torch.tensor([4.0, 5.0, 6.0])
+print(a + b, a * b, a @ b)</code></pre>
+    <div class="verify"><strong>Worked?</strong> All cells run cleanly.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 3</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-13">▶ Open VS Code here</a></div>
+  <h2>Autograd — the magic</h2>
+  <div class="callout info"><span class="callout-label">Why autograd matters</span>PyTorch tracks every operation on tensors with <code>requires_grad=True</code> in a graph. Calling <code>.backward()</code> walks that graph and fills in <code>.grad</code> on every parameter. This is what makes neural network training "just work".</div>
+  <div class="step">
+    <h4>Create <code>02-autograd.ipynb</code></h4>
+    <pre><code>import torch
+x = torch.tensor(3.0, requires_grad=True)
+y = x ** 2
+y.backward()
+print("dy/dx at x=3 =", x.grad)  # expect 6.0</code></pre>
+    <pre><code># f(x) = x² + 2x + 1, f'(x) = 2x + 2
+x.grad.zero_()  # reset
+f = x**2 + 2*x + 1
+f.backward()
+print("f' at x=3 =", x.grad)  # expect 8.0</code></pre>
+    <div class="verify"><strong>Worked?</strong> Both gradients match what the analytic derivative gives.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 4</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-13">▶ Open VS Code here</a></div>
+  <h2>Linear regression by hand in PyTorch</h2>
+  <div class="step">
+    <h4>Create <code>03-linreg.ipynb</code></h4>
+    <pre><code>import torch
+torch.manual_seed(42)
+
+X = torch.randn(100, 1)
+y = 3 * X + 1 + 0.1 * torch.randn(100, 1)
+
+w = torch.tensor([0.0], requires_grad=True)
+b = torch.tensor([0.0], requires_grad=True)
+lr = 0.05
+
+for step in range(200):
+    pred = X * w + b
+    loss = ((pred - y) ** 2).mean()
+    loss.backward()
+    with torch.no_grad():
+        w -= lr * w.grad
+        b -= lr * b.grad
+    w.grad.zero_(); b.grad.zero_()
+
+print(f"learned w = {w.item():.3f}, b = {b.item():.3f}")</code></pre>
+    <div class="verify"><strong>Worked?</strong> w ≈ 3, b ≈ 1.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 5</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-13">▶ Open VS Code here</a></div>
+  <h2><code>nn.Module</code> + <code>nn.Linear</code></h2>
+  <div class="step">
+    <h4>Create <code>04-nn-module.ipynb</code></h4>
+    <pre><code>import torch
+import torch.nn as nn
+import torch.optim as optim
+
+torch.manual_seed(42)
+X = torch.randn(100, 1)
+y = 3 * X + 1 + 0.1 * torch.randn(100, 1)
+
+class LinearReg(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc = nn.Linear(1, 1)
+    def forward(self, x):
+        return self.fc(x)
+
+model = LinearReg()
+loss_fn = nn.MSELoss()
+opt = optim.SGD(model.parameters(), lr=0.05)
+
+for step in range(200):
+    opt.zero_grad()
+    pred = model(X)
+    loss = loss_fn(pred, y)
+    loss.backward()
+    opt.step()
+
+w, b = model.fc.weight.item(), model.fc.bias.item()
+print(f"learned w = {w:.3f}, b = {b:.3f}")</code></pre>
+    <div class="verify"><strong>Worked?</strong> Same w ≈ 3, b ≈ 1, but cleaner code than block 4.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 6</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-13">▶ Open VS Code here</a></div>
+  <h2>Datasets + DataLoaders</h2>
+  <div class="step">
+    <h4>Create <code>05-dataset.ipynb</code></h4>
+    <pre><code>from torch.utils.data import Dataset, DataLoader
+import torch
+
+class FakeDataset(Dataset):
+    def __init__(self, n=100):
+        self.X = torch.randn(n, 1)
+        self.y = 3 * self.X + 1 + 0.1 * torch.randn(n, 1)
+    def __len__(self): return len(self.X)
+    def __getitem__(self, i): return self.X[i], self.y[i]
+
+ds = FakeDataset()
+dl = DataLoader(ds, batch_size=8, shuffle=True)
+
+for x_batch, y_batch in dl:
+    print("batch shape:", x_batch.shape)
+    break  # just show one</code></pre>
+    <div class="verify"><strong>Worked?</strong> Prints <code>torch.Size([8, 1])</code> — DataLoader gave a batch of 8.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 7</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-13">▶ Open VS Code here</a></div>
+  <h2>fast.ai high-level API — image classifier in 5 lines</h2>
+  <div class="step">
+    <h4>1. Install fastai</h4>
+    <pre><code>pip install fastai</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Create <code>06-fastai-pets.ipynb</code></h4>
+    <pre><code>from fastai.vision.all import *
+path = untar_data(URLs.PETS)/'images'
+
+def is_cat(x): return x[0].isupper()
+
+dls = ImageDataLoaders.from_name_func(
+    path,
+    get_image_files(path),
+    valid_pct=0.2,
+    label_func=is_cat,
+    item_tfms=Resize(224)
+)
+
+learn = vision_learner(dls, resnet18, metrics=error_rate)
+learn.fine_tune(1)</code></pre>
+    <div class="verify"><strong>Worked?</strong> Validation error rate &lt; 0.05 after one epoch. (First run downloads the dataset — be patient.)</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<section class="mini-project">
+  <div class="block-head"><span class="block-num">Block 8 · Mini-project</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-13">▶ Open VS Code here</a></div>
+  <h2>Pick-your-own classifier</h2>
+  <div class="step">
+    <h4>1. Pick 2 classes</h4>
+    <p class="do">Pick two visually-distinct classes you can grab 30+ images of each — e.g. "vinyl records vs CDs", "dogs vs squirrels", "your DJ gear vs PE gear".</p>
+  </div>
+  <div class="step">
+    <h4>2. Get images via duckduckgo_search</h4>
+    <pre><code>pip install duckduckgo_search</code></pre>
+    <pre><code>from duckduckgo_search import DDGS
+from fastdownload import download_url
+from pathlib import Path
+
+def search(term, max_n=30):
+    return [r["image"] for r in DDGS().images(term, max_results=max_n)]
+
+for cls in ["vinyl record", "compact disc"]:
+    folder = Path(f"images/{cls}")
+    folder.mkdir(parents=True, exist_ok=True)
+    for url in search(cls):
+        try: download_url(url, folder, show_progress=False)
+        except: pass</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. Clean + train</h4>
+    <pre><code>from fastai.vision.all import *
+path = Path("images")
+dls = ImageDataLoaders.from_folder(path, valid_pct=0.2, item_tfms=Resize(224))
+learn = vision_learner(dls, resnet18, metrics=error_rate)
+learn.fine_tune(3)
+learn.show_results()</code></pre>
+    <div class="verify"><strong>Worked?</strong> Accuracy &gt; 85% on validation.</div>
+  </div>
+  <div class="step">
+    <h4>4. Push notebook to GitHub</h4>
+    <pre><code>git init
+echo .venv/ &gt; .gitignore
+echo images/ &gt;&gt; .gitignore
+echo .ipynb_checkpoints/ &gt;&gt; .gitignore
+git add *.ipynb .gitignore
+git commit -m "feat(fastai): custom 2-class image classifier (worksheet 13)"
+gh repo create fastai-prep --public --source=. --remote=origin --push</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<div class="footer-cta"><strong>Done? Tell Claude.</strong></div>
+</main>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
+const slug='13-fastai-prep';
+document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb)=>{const key=`progress.${slug}.${cb.dataset.block}`;cb.checked=localStorage.getItem(key)==='1';cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');updateProgress();});});
+function updateProgress(){const all=document.querySelectorAll('input[type="checkbox"][data-block]');const done=[...all].filter(c=>c.checked).length;document.querySelector('.progress-fill').style.width=`${(done/all.length)*100}%`;}
+updateProgress();
+document.querySelectorAll('pre').forEach((pre)=>{const code=pre.querySelector('code');if(!code)return;const btn=document.createElement('button');btn.className='copy-btn';btn.type='button';btn.textContent='Copy';btn.addEventListener('click',async(e)=>{e.preventDefault();try{await navigator.clipboard.writeText(code.innerText);}catch{const ta=document.createElement('textarea');ta.value=code.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}btn.textContent='Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);});pre.appendChild(btn);});
+</script></body></html>

@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 09 — SQL &amp; Postgres · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>.step{margin:16px 0 22px;padding:16px 18px;background:var(--card-soft);border-radius:10px;border-left:3px solid var(--accent);}.step h4{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--fg);}.step .what,.step .why{color:var(--fg-soft);font-size:14px;margin:0 0 8px;}.step .why{color:var(--fg-muted);font-size:13px;font-style:italic;}.step .do{font-size:13px;color:var(--fg-soft);margin:8px 0 6px;font-weight:600;}.step .verify{margin-top:12px;padding:10px 14px;background:var(--success-soft);border-radius:8px;color:var(--success-fg);font-size:13px;}.launcher{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:20px 0 32px;}.launcher a{display:flex;flex-direction:column;padding:14px 18px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-fg);text-decoration:none;font-weight:600;}.launcher a small{font-weight:400;font-size:12px;color:var(--fg-soft);margin-top:4px;}</style>
+</head><body><main>
+
+<nav class="nav"><a href="08-nextjs.html">← Worksheet 08</a><span style="color:var(--fg-muted)">Worksheet 09 of 17</span><a href="10-vercel-ai-sdk.html">Next: Vercel AI SDK →</a></nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>SQL &amp; Postgres</h1>
+<p class="meta"><span>8 focus blocks</span><span>~4 hours total</span><span>Phase 3 prep</span></p>
+<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+
+<div class="callout info"><span class="callout-label">What is SQL?</span>SQL = Structured Query Language. Used to talk to relational databases. Postgres is the most respected open-source SQL database — used in production by Notion, Instagram, Vercel, etc.</div>
+
+<p class="lead">Use Neon (free hosted Postgres). All work in the Neon SQL editor. Mini-project: design + query a 3-table schema.</p>
+
+<h2>What this covers</h2>
+<div class="mermaid">
+flowchart TD
+    Root["<b>SQL + Postgres</b>"]:::root
+    Root --> A["<b>Reads</b><br/>SELECT · WHERE · ORDER · LIMIT"]
+    Root --> B["<b>Joins</b><br/>INNER · LEFT · self"]
+    Root --> C["<b>Aggregate</b><br/>GROUP BY · HAVING · windows"]
+    Root --> D["<b>Schema</b><br/>CREATE TABLE · constraints"]
+    Root --> E["<b>Postgres</b><br/>jsonb · arrays · indexes"]
+    classDef root fill:#4f46e5,color:#ffffff,stroke:#4f46e5,stroke-width:2px
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Click <strong>Open VS Code here</strong> to launch VS Code on this worksheet's folder. The "terminal" referred to throughout is <strong>VS Code's integrated terminal panel</strong> — open it via <strong>View → Terminal</strong> at the top menu. No separate window needed.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-09">▶ Open VS Code here<small>opens VS Code on <code>09-sql-postgres</code>.</small></a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/09-sql-postgres/">Open the folder in Explorer</a>
+</div>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 1</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-09">▶ Open VS Code here</a></div>
+  <h2>Setup — Neon free Postgres</h2>
+  <div class="step">
+    <h4>1. Sign up for Neon</h4>
+    <p class="do">Open <a href="https://neon.tech/" target="_blank">neon.tech</a> in Chrome. Sign up with GitHub. Create a project called <code>study</code>.</p>
+  </div>
+  <div class="step">
+    <h4>2. Open the SQL editor</h4>
+    <p class="do">In the Neon dashboard, click <strong>SQL Editor</strong>. Run:</p>
+    <pre><code>SELECT version();</code></pre>
+    <div class="verify"><strong>Worked?</strong> Output shows the Postgres version.</div>
+  </div>
+  <div class="step">
+    <h4>3. Save your queries to <code>01-schema.sql</code> locally</h4>
+    <p class="do">In VS Code, create <code>01-schema.sql</code> in <code>09-sql-postgres</code>. As you write queries in Neon, copy them here too — version control your work.</p>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 2</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-09">▶ Open VS Code here</a></div>
+  <h2>Schema + seed data</h2>
+  <div class="step">
+    <h4>1. Create three related tables</h4>
+    <p class="do">In the Neon SQL editor, run:</p>
+    <pre><code>CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE posts (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id),
+  title TEXT NOT NULL,
+  body TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE tags (
+  id SERIAL PRIMARY KEY,
+  name TEXT UNIQUE NOT NULL
+);
+
+CREATE TABLE post_tags (
+  post_id INT REFERENCES posts(id),
+  tag_id INT REFERENCES tags(id),
+  PRIMARY KEY (post_id, tag_id)
+);</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Insert seed data</h4>
+    <pre><code>INSERT INTO users (name, email) VALUES
+  ('Alice', 'alice@example.com'),
+  ('Bob', 'bob@example.com'),
+  ('Carol', 'carol@gmail.com'),
+  ('Dave', 'dave@gmail.com'),
+  ('Eve', 'eve@example.com');
+
+INSERT INTO posts (user_id, title, body) VALUES
+  (1, 'Hello world', 'first post'),
+  (1, 'Second thought', 'still alive'),
+  (2, 'Bobs note', 'short'),
+  (3, 'Carols musings', 'thoughts'),
+  (4, 'Dave on tech', 'AI is cool'),
+  (4, 'Dave on PE', 'sports too'),
+  (5, 'Eve writes', 'final post');
+
+INSERT INTO tags (name) VALUES ('tech'), ('life'), ('sport'), ('thoughts');
+
+INSERT INTO post_tags (post_id, tag_id) VALUES
+  (1, 1), (1, 2), (2, 2), (3, 4), (4, 4), (5, 1), (6, 3), (7, 2);</code></pre>
+    <div class="verify"><strong>Worked?</strong> <code>SELECT COUNT(*) FROM users</code> returns 5.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 3</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-09">▶ Open VS Code here</a></div>
+  <h2>SELECT, WHERE, ORDER, LIMIT</h2>
+  <div class="step">
+    <h4>Run each in Neon, save in <code>03-reads.sql</code></h4>
+    <pre><code>-- All users, just name + email
+SELECT name, email FROM users;
+
+-- Gmail users only, newest first, top 3
+SELECT * FROM users
+WHERE email LIKE '%@gmail.com'
+ORDER BY created_at DESC
+LIMIT 3;
+
+-- Alice's recent posts
+SELECT * FROM posts WHERE user_id = 1;
+
+-- Distinct authors who have posted
+SELECT DISTINCT user_id FROM posts;</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 4</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-09">▶ Open VS Code here</a></div>
+  <h2>Joins</h2>
+  <div class="step">
+    <h4>Save in <code>04-joins.sql</code></h4>
+    <pre><code>-- INNER: users + their posts (only matched)
+SELECT u.name, p.title
+FROM users u INNER JOIN posts p ON p.user_id = u.id;
+
+-- LEFT: all users, posts where they exist (NULL otherwise)
+SELECT u.name, p.title
+FROM users u LEFT JOIN posts p ON p.user_id = u.id;
+
+-- 3-table: user, post title, tag names
+SELECT u.name, p.title, t.name AS tag
+FROM users u
+JOIN posts p ON p.user_id = u.id
+JOIN post_tags pt ON pt.post_id = p.id
+JOIN tags t ON t.id = pt.tag_id;</code></pre>
+    <div class="verify"><strong>Worked?</strong> The LEFT JOIN includes users with NULL post titles (users who haven't posted).</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 5</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-09">▶ Open VS Code here</a></div>
+  <h2>GROUP BY + aggregates</h2>
+  <div class="step">
+    <h4>Save in <code>05-aggregates.sql</code></h4>
+    <pre><code>-- Posts per user
+SELECT user_id, COUNT(*) AS post_count
+FROM posts GROUP BY user_id;
+
+-- Users with at least 2 posts (HAVING filters groups)
+SELECT user_id, COUNT(*) FROM posts
+GROUP BY user_id HAVING COUNT(*) &gt;= 2;
+
+-- Tag usage ranking
+SELECT t.name, COUNT(*) AS uses
+FROM tags t
+JOIN post_tags pt ON pt.tag_id = t.id
+GROUP BY t.name
+ORDER BY uses DESC;</code></pre>
+    <p style="font-size:13px;color:var(--fg-muted);"><strong>WHERE</strong> filters rows before grouping. <strong>HAVING</strong> filters groups after grouping.</p>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 6</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-09">▶ Open VS Code here</a></div>
+  <h2>Window functions</h2>
+  <div class="step">
+    <h4>Save in <code>06-windows.sql</code></h4>
+    <p class="what"><strong>What:</strong> window functions compute over groups but keep all rows (unlike GROUP BY which collapses).</p>
+    <pre><code>-- Number each user's posts newest first
+SELECT title, user_id,
+  ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY created_at DESC) AS rn
+FROM posts;
+
+-- Each row preserved, plus the user's total post count
+SELECT user_id, title,
+  COUNT(*) OVER (PARTITION BY user_id) AS user_total
+FROM posts;</code></pre>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 7</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-09">▶ Open VS Code here</a></div>
+  <h2>Postgres specifics: jsonb, arrays, indexes</h2>
+  <div class="step">
+    <h4>Save in <code>07-postgres.sql</code></h4>
+    <pre><code>-- jsonb column
+ALTER TABLE posts ADD COLUMN metadata JSONB DEFAULT '{}';
+UPDATE posts SET metadata = '{"views": 100, "tags": ["a", "b"]}' WHERE id = 1;
+SELECT id, metadata-&gt;&gt;'views' AS views FROM posts WHERE metadata-&gt;&gt;'views' = '100';
+
+-- text array
+ALTER TABLE posts ADD COLUMN keywords TEXT[];
+UPDATE posts SET keywords = ARRAY['python', 'sql'] WHERE id = 1;
+SELECT * FROM posts WHERE 'python' = ANY(keywords);
+
+-- index for performance
+CREATE INDEX idx_posts_user_id ON posts(user_id);
+EXPLAIN ANALYZE SELECT * FROM posts WHERE user_id = 1;</code></pre>
+    <div class="verify"><strong>Worked?</strong> The EXPLAIN output shows <code>Index Scan</code> using your new index.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<section class="mini-project">
+  <div class="block-head"><span class="block-num">Block 8 · Mini-project</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-09">▶ Open VS Code here</a></div>
+  <h2>Design + query a real schema</h2>
+  <div class="step">
+    <h4>1. Pick a domain</h4>
+    <p class="do">Pick one: habit tracker, reading list, DJ gig log. Design 3-4 tables with foreign keys + constraints.</p>
+  </div>
+  <div class="step">
+    <h4>2. Write CREATE TABLE + seed data + 5 useful queries</h4>
+    <p class="do">Save everything in <code>mini-project.sql</code> in VS Code. Run all of it in Neon.</p>
+  </div>
+  <div class="step">
+    <h4>3. Push to GitHub</h4>
+    <pre><code>git init
+git add *.sql
+git commit -m "feat(sql): worksheet 09 schemas + queries"
+gh repo create sql-practice --public --source=. --remote=origin --push</code></pre>
+    <div class="verify"><strong>Worked?</strong> Live at <a href="https://github.com/Dave-Buckley/sql-practice" target="_blank">github.com/Dave-Buckley/sql-practice</a>.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<div class="footer-cta"><strong>Done? Tell Claude.</strong></div>
+</main>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
+const slug='09-sql-postgres';
+document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb)=>{const key=`progress.${slug}.${cb.dataset.block}`;cb.checked=localStorage.getItem(key)==='1';cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');updateProgress();});});
+function updateProgress(){const all=document.querySelectorAll('input[type="checkbox"][data-block]');const done=[...all].filter(c=>c.checked).length;document.querySelector('.progress-fill').style.width=`${(done/all.length)*100}%`;}
+updateProgress();
+document.querySelectorAll('pre').forEach((pre)=>{const code=pre.querySelector('code');if(!code)return;const btn=document.createElement('button');btn.className='copy-btn';btn.type='button';btn.textContent='Copy';btn.addEventListener('click',async(e)=>{e.preventDefault();try{await navigator.clipboard.writeText(code.innerText);}catch{const ta=document.createElement('textarea');ta.value=code.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}btn.textContent='Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);});pre.appendChild(btn);});
+</script></body></html>

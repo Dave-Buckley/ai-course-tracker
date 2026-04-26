@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 02 — Python Basics · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .step { margin: 16px 0 22px; padding: 16px 18px; background: var(--card-soft); border-radius: 10px; border-left: 3px solid var(--accent); }
+  .step h4 { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--fg); }
+  .step .what { color: var(--fg-soft); font-size: 14px; margin: 0 0 8px; }
+  .step .why { color: var(--fg-muted); font-size: 13px; font-style: italic; margin: 0 0 12px; }
+  .step .do { font-size: 13px; color: var(--fg-soft); margin: 8px 0 6px; font-weight: 600; }
+  .step .verify { margin-top: 12px; padding: 10px 14px; background: var(--success-soft); border-radius: 8px; color: var(--success-fg); font-size: 13px; }
+  .step .verify strong { color: var(--success-fg); }
+  .replace { background: var(--warn-soft); color: var(--warn-fg); padding: 1px 6px; border-radius: 4px; font-weight: 600; font-size: 12px; }
+  .launcher { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 20px 0 32px; }
+  .launcher a { display: flex; flex-direction: column; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent-fg); text-decoration: none; font-weight: 600; transition: transform 0.05s, box-shadow 0.15s; }
+  .launcher a:hover { box-shadow: var(--shadow); text-decoration: none; }
+  .launcher a small { font-weight: 400; font-size: 12px; color: var(--fg-soft); margin-top: 4px; }
+</style>
+</head>
+<body>
+<main>
+
+<nav class="nav">
+  <a href="01-git-hygiene.html">← Worksheet 01</a>
+  <span style="color: var(--fg-muted)">Worksheet 02 of 17</span>
+  <a href="03-c-quickstart.html">Next: C Quickstart →</a>
+</nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>Python Basics</h1>
+<p class="meta">
+  <span>10 focus blocks</span>
+  <span>~5 hours total</span>
+  <span>Phase 2 prep</span>
+  <span>Reference: <a href="https://cs50.harvard.edu/python/2024/weeks/0/" target="_blank">CS50P Lecture 0</a></span>
+</p>
+
+<div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+
+<div class="callout info">
+  <span class="callout-label">What is Python, in one sentence?</span>
+  Python is a programming language designed to be readable. You write instructions in a file (e.g. <code>hello.py</code>), the Python interpreter reads them top to bottom and executes them. It's the dominant language for AI/ML work, which is why we start here.
+</div>
+
+<p class="lead">
+  By the end of this worksheet you'll be fluent enough in Python basics that the first 90% of CS50P Lecture 0 will be revision rather than introduction. Each block ~30 minutes — do them in order.
+</p>
+
+<h2>What this worksheet covers</h2>
+<div class="mermaid">
+flowchart TD
+    Root["<b>Python Basics</b>"]:::root
+    Root --> A["<b>Setup</b><br/>Python · venv · pip"]
+    Root --> B["<b>Data types</b><br/>numeric · text · sequences · dicts · sets"]
+    Root --> C["<b>Operators</b><br/>arithmetic · comparison · logical"]
+    Root --> D["<b>Statements</b><br/>if/else · for · while · break · continue"]
+    Root --> E["<b>Functions</b><br/>built-in · custom · default args"]
+    Root --> F["<b>Packages</b><br/>import · pip install"]
+    classDef root fill:#4f46e5,color:#ffffff,stroke:#4f46e5,stroke-width:2px
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 8px;">Click <strong>Open VS Code here</strong> once at the start of a session — opens VS Code on the worksheet folder. Press <strong>View → Terminal</strong> in VS Code to get the integrated PowerShell at the bottom. Each command block has a <strong>Copy</strong> button.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-02">
+    ▶ Open VS Code here
+    <small>opens VS Code on <code>02-python-basics</code>. Re-runnable any time you sit back down.</small>
+  </a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/02-python-basics/">
+    Open the folder in Explorer
+    <small>see what files you've saved, drag-drop, or check progress visually.</small>
+  </a>
+</div>
+
+<!-- BLOCK 1 -->
+<section class="block" id="block-1">
+  <div class="block-head">
+    <span class="block-num">Block 1</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-02">▶ Open VS Code here</a>
+  </div>
+  <h2>Setup</h2>
+  <p>Get Python installed, create your first virtual environment, and confirm the toolchain works. By the end, you can run a Python script.</p>
+
+  <div class="callout info">
+    <span class="callout-label">Working folder for this entire worksheet</span>
+    Everything in Worksheet 02 happens inside <code>C:\Users\David\Documents\AI Course\02-python-basics\</code>. That folder already exists. We don't make sub-folders — that folder <em>is</em> your Python practice space.
+  </div>
+
+  <div class="step">
+    <h4>1. Confirm Python is installed</h4>
+    <p class="what"><strong>What:</strong> check whether Python 3.13 is on your computer.</p>
+    <p class="do">In VS Code's terminal (View → Terminal), run:</p>
+    <pre><code>python --version</code></pre>
+    <div class="verify"><strong>Worked?</strong> You see something like <code>Python 3.13.0</code>. If it says "command not found", install Python from <a href="https://www.python.org/downloads/" target="_blank">python.org</a>, tick "Add to PATH" in the installer, restart VS Code, try again.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. Move into your worksheet folder</h4>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>cd "C:\Users\David\Documents\AI Course\02-python-basics"</code></pre>
+    <div class="verify"><strong>Worked?</strong> The terminal prompt shows <code>02-python-basics&gt;</code> at the end.</div>
+  </div>
+
+  <div class="step">
+    <h4>3. Create a virtual environment (venv)</h4>
+    <p class="what"><strong>What:</strong> a venv is an isolated copy of Python for this project so packages you install don't interfere with other projects.</p>
+    <p class="why"><strong>Why:</strong> different projects often need different versions of the same package. A venv prevents conflicts. Standard practice for every Python project.</p>
+    <p class="do">Run:</p>
+    <pre><code>python -m venv .venv</code></pre>
+    <div class="verify"><strong>Worked?</strong> A new <code>.venv</code> folder appears in VS Code's left file panel.</div>
+  </div>
+
+  <div class="step">
+    <h4>4. Activate the venv</h4>
+    <p class="what"><strong>What:</strong> "switch into" the isolated Python so future <code>pip</code> and <code>python</code> commands use it.</p>
+    <p class="do">Run:</p>
+    <pre><code>.\.venv\Scripts\activate</code></pre>
+    <div class="verify"><strong>Worked?</strong> Your terminal prompt now starts with <code>(.venv)</code>. You'll see this every time the venv is active.</div>
+  </div>
+
+  <div class="step">
+    <h4>5. Install your first package as a smoke test</h4>
+    <p class="what"><strong>What:</strong> install <code>rich</code>, a package that makes terminal output prettier. We'll use it later.</p>
+    <p class="do">Run:</p>
+    <pre><code>pip install rich</code></pre>
+    <div class="verify"><strong>Worked?</strong> You see "Successfully installed rich". Run <code>pip list</code> — it appears in the list.</div>
+  </div>
+
+  <div class="step">
+    <h4>6. Tell VS Code which Python to use</h4>
+    <p class="what"><strong>What:</strong> point VS Code at the <code>.venv</code> Python rather than your system Python.</p>
+    <p class="do">In VS Code:</p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size:14px;">
+      <li>Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> to open the command palette.</li>
+      <li>Type <code>Python: Select Interpreter</code> and press Enter.</li>
+      <li>Pick the one labelled "<code>.venv</code>" (probably top of the list).</li>
+    </ol>
+    <div class="verify"><strong>Worked?</strong> The bottom-right corner of VS Code shows <code>3.13.0 ('.venv': venv)</code>.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<!-- BLOCK 2 -->
+<section class="block" id="block-2">
+  <div class="block-head">
+    <span class="block-num">Block 2</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-02">▶ Open VS Code here</a>
+  </div>
+  <h2>Variables, numbers, text, sequences</h2>
+  <p>The four most common types of data in Python: numbers, strings, lists, tuples. Create one tiny file per concept. Each file is one experiment.</p>
+
+  <div class="callout info">
+    <span class="callout-label">How to create + run a Python file</span>
+    For every step in this block: in VS Code, hover over <strong>02-PYTHON-BASICS</strong> in the left panel → click "New File" icon → name as instructed → type the code → save with <kbd>Ctrl</kbd>+<kbd>S</kbd> → run in terminal with <code>python &lt;filename&gt;</code>.
+  </div>
+
+  <div class="step">
+    <h4>1. <code>01-numeric.py</code> — numbers</h4>
+    <p class="do">Create the file. Type:</p>
+    <pre><code>x = 7
+y = 3.14
+z = 2 + 3j
+print(x, type(x))
+print(y, type(y))
+print(z, type(z))</code></pre>
+    <p style="font-size:12px; color: var(--fg-muted);">Save in: <code>C:\Users\David\Documents\AI Course\02-python-basics\01-numeric.py</code></p>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>python 01-numeric.py</code></pre>
+    <div class="verify"><strong>Worked?</strong> Output shows three values with their types: <code>&lt;class 'int'&gt;</code>, <code>&lt;class 'float'&gt;</code>, <code>&lt;class 'complex'&gt;</code>.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. <code>02-text.py</code> — strings</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>name = "David Buckley"
+print(name.upper())
+print(name.lower())
+print(name[::-1])
+print(len(name))</code></pre>
+    <p class="do">Run with <code>python 02-text.py</code>.</p>
+    <div class="verify"><strong>Worked?</strong> Prints uppercase, lowercase, reversed string, and the length (13).</div>
+  </div>
+
+  <div class="step">
+    <h4>3. <code>03-sequences.py</code> — list, tuple, range</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>fruits = ["apple", "banana", "cherry"]
+coords = (3, 4)
+nums = range(10)
+print(fruits[0], fruits[-1])
+print(coords[0], coords[-1])
+print(list(nums)[0], list(nums)[-1])</code></pre>
+    <p class="do">Run with <code>python 03-sequences.py</code>.</p>
+    <div class="verify"><strong>Worked?</strong> First and last values for each printed. You can explain that lists are mutable (changeable) but tuples aren't.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<!-- BLOCK 3 -->
+<section class="block" id="block-3">
+  <div class="block-head">
+    <span class="block-num">Block 3</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-02">▶ Open VS Code here</a>
+  </div>
+  <h2>Mappings, sets, booleans, None</h2>
+  <p>Dictionaries (key-value lookup), sets (unique values), booleans (true/false), None (the "no value" value).</p>
+
+  <div class="step">
+    <h4>1. <code>04-mapping.py</code> — dictionary</h4>
+    <p class="what"><strong>What:</strong> a dict stores key→value pairs. Used everywhere — JSON, configs, lookups.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>person = {"name": "David", "age": 32, "role": "PE teacher"}
+print(person["name"])
+person["city"] = "Sheffield"
+del person["age"]
+print(person)</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Final print shows three keys (no <code>age</code>) including the new <code>city</code>.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. <code>05-sets.py</code> — sets</h4>
+    <p class="what"><strong>What:</strong> a set holds unique values. Useful for "is this in there?" checks.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>a = {1, 2, 3, 4}
+b = {3, 4, 5, 6}
+print("union:", a | b)
+print("intersection:", a & b)
+print("difference:", a - b)</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Three lines printed showing union (1-6), intersection (3,4), difference (1,2).</div>
+  </div>
+
+  <div class="step">
+    <h4>3. <code>06-boolean-none.py</code> — truthy values + None</h4>
+    <p class="what"><strong>What:</strong> see what counts as "true" and "false" in Python's eyes. Empty things are falsy.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>print(bool(0))
+print(bool(""))
+print(bool([]))
+print(bool(None))
+print(None == False)</code></pre>
+    <p class="do">Run. Predict each value before running.</p>
+    <div class="verify"><strong>Worked?</strong> All except the last print <code>False</code>. <code>None == False</code> is <code>False</code> too — they're different things.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<!-- BLOCK 4 -->
+<section class="block" id="block-4">
+  <div class="block-head">
+    <span class="block-num">Block 4</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-02">▶ Open VS Code here</a>
+  </div>
+  <h2>Operators</h2>
+  <p>Arithmetic, comparison, logical, identity, membership. The verbs Python uses to manipulate values.</p>
+
+  <div class="step">
+    <h4>1. <code>07-arithmetic.py</code> — maths</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>print(7 / 2)    # division
+print(7 // 2)   # integer division
+print(7 % 2)    # remainder
+print(7 ** 2)   # power</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Outputs: <code>3.5</code>, <code>3</code>, <code>1</code>, <code>49</code>. <code>/</code> always gives a float; <code>//</code> rounds down.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. <code>08-comparison.py</code> — comparing values</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>print(5 == 5)
+print(5 != 6)
+print(5 &lt; 6)
+print("apple" == "apple")
+print(5 == "5")</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> All <code>True</code> except the last (string and int are different types).</div>
+  </div>
+
+  <div class="step">
+    <h4>3. <code>09-logical.py</code> — and / or / not</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>n = 15
+print(n &gt;= 10 and n &lt;= 20)   # in range
+print(n == 5 or n == 15)     # one or the other
+print(not n &lt; 0)             # negation</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> All three print <code>True</code>.</div>
+  </div>
+
+  <div class="step">
+    <h4>4. <code>10-identity-membership.py</code> — <code>is</code> and <code>in</code></h4>
+    <p class="what"><strong>What:</strong> <code>is</code> tests if two names point to the same object. <code>in</code> tests membership.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>a = [1, 2, 3]
+b = a
+c = [1, 2, 3]
+print(a is b)   # same object
+print(a is c)   # equal but different objects
+print(a == c)   # equal values
+print(2 in a)
+print("apple" in "pineapple")</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> <code>True, False, True, True, True</code>. <code>is</code> is stricter than <code>==</code>.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<!-- BLOCK 5 -->
+<section class="block" id="block-5">
+  <div class="block-head">
+    <span class="block-num">Block 5</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-02">▶ Open VS Code here</a>
+  </div>
+  <h2>Conditionals + loops</h2>
+
+  <div class="mermaid">
+flowchart LR
+    A[input n] --> B{n &lt; 0?}
+    B -->|true| C[print 'negative']
+    B -->|false| D{n == 0?}
+    D -->|true| E[print 'zero']
+    D -->|false| F[print 'positive']
+</div>
+
+  <div class="step">
+    <h4>1. <code>11-if-elif-else.py</code> — branching</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>def classify(n):
+    if n &lt; 0:
+        print("negative")
+    elif n == 0:
+        print("zero")
+    else:
+        print("positive")
+
+classify(-5)
+classify(0)
+classify(7)</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Three lines: negative, zero, positive.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. <code>12-for-loop.py</code> — <code>for</code> over a list</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>names = ["Alice", "Bob", "Carol", "Dave", "Eve"]
+for i, name in enumerate(names, start=1):
+    print(f"{i}. {name}")</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Five numbered lines starting at 1.</div>
+  </div>
+
+  <div class="step">
+    <h4>3. <code>13-while-loop.py</code> — <code>while</code></h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>while True:
+    n = input("Type a number (0 to stop): ")
+    if n == "0":
+        break
+    print(f"You typed: {n}")</code></pre>
+    <p class="do">Run. Type a few numbers, then <code>0</code>.</p>
+    <div class="verify"><strong>Worked?</strong> Loops until you type 0, then exits.</div>
+  </div>
+
+  <div class="step">
+    <h4>4. <code>14-break-continue.py</code> — loop control</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>for n in range(1, 21):
+    if n % 3 == 0:
+        continue   # skip multiples of 3
+    if n &gt; 17:
+        break      # stop after 17
+    print(n)</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints 1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17. No multiples of 3, stops at 17.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<!-- BLOCK 6 -->
+<section class="block" id="block-6">
+  <div class="block-head">
+    <span class="block-num">Block 6</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-02">▶ Open VS Code here</a>
+  </div>
+  <h2>Functions</h2>
+  <p>The single most important pattern: package code into a named, reusable block. <code>def</code> defines, the name calls it.</p>
+
+  <div class="step">
+    <h4>1. <code>15-builtins.py</code> — built-in functions</h4>
+    <p class="what"><strong>What:</strong> Python ships with many ready-to-use functions. You don't need to define <code>len</code>, <code>sum</code>, etc.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>nums = [3, 1, 4, 1, 5, 9, 2, 6]
+print(len(nums))
+print(sum(nums))
+print(max(nums))
+print(min(nums))
+print(sorted(nums))</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> 8, 31, 9, 1, sorted list.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. <code>16-custom-fn.py</code> — your own function</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>def greet(name):
+    return f"Hello, {name}"
+
+print(greet("David"))
+print(greet("Alice"))</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Two greetings printed.</div>
+  </div>
+
+  <div class="step">
+    <h4>3. <code>17-default-args.py</code> — default values</h4>
+    <p class="what"><strong>What:</strong> a parameter can have a default that's used if the caller doesn't provide one.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>def greet(name, greeting="Hello"):
+    return f"{greeting}, {name}"
+
+print(greet("David"))
+print(greet("David", "Hi"))</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> First uses default greeting, second overrides it.</div>
+  </div>
+
+  <div class="step">
+    <h4>4. <code>18-multi-return.py</code> — returning multiple values</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>def min_max(values):
+    return min(values), max(values)
+
+low, high = min_max([3, 1, 4, 1, 5, 9, 2, 6])
+print(f"low={low}, high={high}")</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints <code>low=1, high=9</code>. The function returns a tuple, you unpack it.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<!-- BLOCK 7 -->
+<section class="block" id="block-7">
+  <div class="block-head">
+    <span class="block-num">Block 7</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-02">▶ Open VS Code here</a>
+  </div>
+  <h2>Packages, imports, working with files</h2>
+
+  <div class="step">
+    <h4>1. <code>19-import-stdlib.py</code> — standard library</h4>
+    <p class="what"><strong>What:</strong> Python ships with many built-in modules. <code>import</code> brings them in.</p>
+    <p class="do">Create. Type:</p>
+    <pre><code>import math
+from datetime import date
+
+print(math.sqrt(16))
+print(math.pi)
+print(date.today())</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> 4.0, 3.14159..., today's date.</div>
+  </div>
+
+  <div class="step">
+    <h4>2. <code>20-import-rich.py</code> — using an installed package</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>from rich import print
+
+print({"name": "David", "age": 32, "skills": ["python", "git"]})</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> The dict prints with colour and proper indentation.</div>
+  </div>
+
+  <div class="step">
+    <h4>3. Pin your dependencies</h4>
+    <p class="what"><strong>What:</strong> save the list of installed packages to a file so you (or anyone) can recreate the venv later.</p>
+    <p class="do">In VS Code's terminal (View → Terminal):</p>
+    <pre><code>pip freeze &gt; requirements.txt</code></pre>
+    <p class="do">Open <code>requirements.txt</code> in VS Code.</p>
+    <div class="verify"><strong>Worked?</strong> The file lists <code>rich</code> with its version.</div>
+  </div>
+
+  <div class="step">
+    <h4>4. <code>21-cwd.py</code> — what folder am I in?</h4>
+    <p class="do">Create. Type:</p>
+    <pre><code>import os
+print(os.getcwd())</code></pre>
+    <p class="do">Run.</p>
+    <div class="verify"><strong>Worked?</strong> Prints the absolute path of the folder you're in (should end in <code>02-python-basics</code>).</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<!-- BLOCK 8 — MINI PROJECT START -->
+<section class="block" id="block-8">
+  <div class="block-head">
+    <span class="block-num">Block 8</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-02">▶ Open VS Code here</a>
+  </div>
+  <h2>Mini-project setup: <code>wordcount.py</code></h2>
+  <p>Build a small program that counts characters and words in a sentence. Block 8 sets the foundation; Block 9 adds features; Block 10 polishes and ships.</p>
+
+  <div class="step">
+    <h4>1. Create the file <code>wordcount.py</code></h4>
+    <p class="do" style="margin-bottom:8px;">In VS Code:</p>
+    <ol style="padding-left: 20px; color: var(--fg-soft); font-size:14px;">
+      <li>Hover over <strong>02-PYTHON-BASICS</strong>, click "New File".</li>
+      <li>Name: <code>wordcount.py</code></li>
+    </ol>
+    <p style="font-size: 12px; color: var(--fg-muted);">File location: <code>C:\Users\David\Documents\AI Course\02-python-basics\wordcount.py</code></p>
+  </div>
+
+  <div class="step">
+    <h4>2. Add the input and counting functions</h4>
+    <p class="do">Type into <code>wordcount.py</code>:</p>
+    <pre><code>def get_sentence() -&gt; str:
+    return input("Type a sentence: ").strip()
+
+def count_chars(s: str) -&gt; int:
+    return len(s)
+
+def count_words(s: str) -&gt; int:
+    return len(s.split())
+
+if __name__ == "__main__":
+    text = "the quick brown fox jumps over the lazy dog"
+    print(f"chars: {count_chars(text)}")
+    print(f"words: {count_words(text)}")</code></pre>
+    <p class="do">Save. Run with <code>python wordcount.py</code>.</p>
+    <div class="verify"><strong>Worked?</strong> Prints chars: 43 and words: 9 for the hardcoded test sentence.</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<!-- BLOCK 9 -->
+<section class="block" id="block-9">
+  <div class="block-head">
+    <span class="block-num">Block 9</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-02">▶ Open VS Code here</a>
+  </div>
+  <h2>Mini-project: unique words + most common</h2>
+
+  <div class="step">
+    <h4>1. Add unique-words count</h4>
+    <p class="do">In <code>wordcount.py</code>, add this function above the <code>if __name__ ...</code> block:</p>
+    <pre><code>def unique_words(s: str) -&gt; int:
+    return len(set(s.lower().split()))</code></pre>
+  </div>
+
+  <div class="step">
+    <h4>2. Add a most-common function (no Counter — write the loop)</h4>
+    <p class="why"><strong>Why no Counter:</strong> writing the dict-building loop yourself teaches the pattern. <code>collections.Counter</code> is fine in real code, but seeing it from scratch makes it click.</p>
+    <p class="do">Add:</p>
+    <pre><code>def most_common(s: str) -&gt; str:
+    counts = {}
+    for word in s.lower().split():
+        counts[word] = counts.get(word, 0) + 1
+    best_word = ""
+    best_count = 0
+    for word, count in counts.items():
+        if count &gt; best_count:
+            best_word = word
+            best_count = count
+    return best_word</code></pre>
+  </div>
+
+  <div class="step">
+    <h4>3. Use them in <code>__main__</code></h4>
+    <p class="do">Update the <code>if __name__ == "__main__":</code> block:</p>
+    <pre><code>if __name__ == "__main__":
+    text = "the quick brown fox jumps over the lazy dog the"
+    print(f"chars: {count_chars(text)}")
+    print(f"words: {count_words(text)}")
+    print(f"unique: {unique_words(text)}")
+    print(f"most common: {most_common(text)}")</code></pre>
+    <p class="do">Save. Run.</p>
+    <div class="verify"><strong>Worked?</strong> Most common word is <code>the</code> (appears twice).</div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="9"> Block 9 complete</label>
+</section>
+
+<!-- BLOCK 10 -->
+<section class="mini-project">
+  <div class="block-head">
+    <span class="block-num">Block 10 · Mini-project</span>
+    <span class="block-time">~30 min</span>
+    <a class="open-ps-btn" href="aicourse:open-worksheet-02">▶ Open VS Code here</a>
+  </div>
+  <h2>Polish + ship to GitHub</h2>
+
+  <div class="step">
+    <h4>1. Replace <code>print</code> with rich.print</h4>
+    <p class="do">At the very top of <code>wordcount.py</code>, add:</p>
+    <pre><code>from rich import print</code></pre>
+    <p class="do">Run again — output is now nicely coloured.</p>
+  </div>
+
+  <div class="step">
+    <h4>2. Use real input + add a type-check guard</h4>
+    <p class="do">Replace the test line in <code>__main__</code> with:</p>
+    <pre><code>if __name__ == "__main__":
+    text = get_sentence()
+    assert isinstance(text, str), "expected a string"
+    print(f"chars: {count_chars(text)}")
+    print(f"words: {count_words(text)}")
+    print(f"unique: {unique_words(text)}")
+    print(f"most common: {most_common(text)}")</code></pre>
+    <p class="do">Save. Run. Type a sentence when prompted.</p>
+    <div class="verify"><strong>Worked?</strong> Stats print for whatever you typed.</div>
+  </div>
+
+  <div class="step">
+    <h4>3. Make it a Git repo + push to GitHub</h4>
+    <p class="do">In the terminal (still in <code>02-python-basics</code>):</p>
+    <pre><code>git init
+echo .venv/ &gt; .gitignore
+echo __pycache__/ &gt;&gt; .gitignore
+git add wordcount.py requirements.txt .gitignore
+git commit -m "feat(python): wordcount mini-project (worksheet 02)"
+gh repo create python-wordcount --public --source=. --remote=origin --push</code></pre>
+    <div class="verify"><strong>Worked?</strong> The repo is live at <a href="https://github.com/Dave-Buckley/python-wordcount" target="_blank">github.com/Dave-Buckley/python-wordcount</a>. <strong>Counts towards FND-01's "≥3 small Python artifacts" requirement.</strong></div>
+  </div>
+
+  <label class="block-checkbox"><input type="checkbox" data-block="10"> Block 10 complete</label>
+</section>
+
+<div class="footer-cta">
+  <strong>Done? Tell Claude.</strong>
+  <p>Open Claude from the hub and say: "I've finished Worksheet 02." Claude updates the master roadmap and refreshes the next-steps page.</p>
+</div>
+
+</main>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    themeVariables: {
+      primaryColor: '#eef2ff',
+      primaryTextColor: '#1e1b4b',
+      primaryBorderColor: '#4f46e5',
+      lineColor: '#475569',
+      secondaryColor: '#dbeafe',
+      tertiaryColor: '#fef3c7',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      fontSize: '14px',
+    }
+  });
+
+  const slug = '02-python-basics';
+  document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb) => {
+    const key = `progress.${slug}.${cb.dataset.block}`;
+    cb.checked = localStorage.getItem(key) === '1';
+    cb.addEventListener('change', () => {
+      localStorage.setItem(key, cb.checked ? '1' : '0');
+      updateProgress();
+    });
+  });
+  function updateProgress() {
+    const all = document.querySelectorAll('input[type="checkbox"][data-block]');
+    const done = [...all].filter(c => c.checked).length;
+    const pct = (done / all.length) * 100;
+    document.querySelector('.progress-fill').style.width = `${pct}%`;
+  }
+  updateProgress();
+
+  document.querySelectorAll('pre').forEach((pre) => {
+    const code = pre.querySelector('code');
+    if (!code) return;
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const text = code.innerText;
+      try { await navigator.clipboard.writeText(text); }
+      catch {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+    });
+    pre.appendChild(btn);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worksheet 17 — MLOps & Docker · AI Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>.step{margin:16px 0 22px;padding:16px 18px;background:var(--card-soft);border-radius:10px;border-left:3px solid var(--accent);}.step h4{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--fg);}.step .what,.step .why{color:var(--fg-soft);font-size:14px;margin:0 0 8px;}.step .why{color:var(--fg-muted);font-size:13px;font-style:italic;}.step .do{font-size:13px;color:var(--fg-soft);margin:8px 0 6px;font-weight:600;}.step .verify{margin-top:12px;padding:10px 14px;background:var(--success-soft);border-radius:8px;color:var(--success-fg);font-size:13px;}.launcher{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:20px 0 32px;}.launcher a{display:flex;flex-direction:column;padding:14px 18px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-fg);text-decoration:none;font-weight:600;}.launcher a small{font-weight:400;font-size:12px;color:var(--fg-soft);margin-top:4px;}</style>
+</head><body><main>
+
+<nav class="nav"><a href="16-agents.html">← Worksheet 16</a><span style="color:var(--fg-muted)">Worksheet 17 of 17</span><a href="index.html">→ Course hub</a></nav>
+
+<span class="kicker">Pre-course worksheet</span>
+<h1>MLOps &amp; Docker</h1>
+<p class="meta"><span>8 focus blocks</span><span>~4 hours total</span><span>Phase 5 prep — DAI-04 / MKT-01</span></p>
+<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+
+<div class="callout info"><span class="callout-label">What is MLOps?</span>"Machine Learning Operations" — getting models from notebook to production. Docker packages your app + dependencies into a reproducible image. Fly.io or Railway hosts that image as a public URL. CI runs your tests on every commit. By the end you'll have your RAG app from Worksheet 15 deployed on a public URL.</div>
+
+<p class="lead">Mini-project: containerise + deploy your RAG app from Worksheet 15.</p>
+
+<h2>The shipping path</h2>
+<div class="mermaid">
+flowchart LR
+    A[Code] --> B[Dockerfile] --> C[docker build] --> D[Image] --> E[Push to registry] --> F[Cloud deploys] --> G[Public URL]
+</div>
+
+<h3>One-click launchers</h3>
+<p style="font-size: 14px; color: var(--fg-muted); margin: 0 0 12px;">Click <strong>Open VS Code here</strong> to launch VS Code on this worksheet's folder. The "terminal" referred to throughout is <strong>VS Code's integrated terminal panel</strong> — open it via <strong>View → Terminal</strong>. No separate window needed.</p>
+<div class="launcher">
+  <a href="aicourse:open-worksheet-17">▶ Open VS Code here<small>opens VS Code on <code>17-mlops-docker</code>.</small></a>
+  <a href="file:///C:/Users/David/Documents/AI%20Course/17-mlops-docker/">Open the folder in Explorer</a>
+</div>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 1</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-17">▶ Open VS Code here</a></div>
+  <h2>Docker setup</h2>
+  <div class="step">
+    <h4>1. Install Docker Desktop</h4>
+    <p class="do">Download <a href="https://www.docker.com/products/docker-desktop/" target="_blank">Docker Desktop for Windows</a>. Install. Reboot if asked. Open Docker Desktop and accept the licence.</p>
+  </div>
+  <div class="step">
+    <h4>2. Confirm it works</h4>
+    <p class="do">In the terminal:</p>
+    <pre><code>docker --version
+docker run hello-world</code></pre>
+    <div class="verify"><strong>Worked?</strong> Both commands run. <code>hello-world</code> prints a friendly message.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="1"> Block 1 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 2</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-17">▶ Open VS Code here</a></div>
+  <h2>First Dockerfile</h2>
+  <div class="step">
+    <h4>1. Create a tiny FastAPI app</h4>
+    <p class="do">In <code>17-mlops-docker</code>, create folder <code>01-hello/</code> and inside:</p>
+    <p class="do"><code>01-hello/app.py</code>:</p>
+    <pre><code>from fastapi import FastAPI
+app = FastAPI()
+
+@app.get("/")
+def root(): return {"hello": "from docker"}</code></pre>
+    <p class="do"><code>01-hello/requirements.txt</code>:</p>
+    <pre><code>fastapi
+uvicorn[standard]</code></pre>
+    <p class="do"><code>01-hello/Dockerfile</code>:</p>
+    <pre><code>FROM python:3.13-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY app.py .
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Build + run</h4>
+    <pre><code>cd 01-hello
+docker build -t hello-fastapi .
+docker run -p 8000:8000 hello-fastapi</code></pre>
+    <p class="do">Open <a href="http://localhost:8000" target="_blank">localhost:8000</a> in Chrome.</p>
+    <div class="verify"><strong>Worked?</strong> Browser shows <code>{"hello": "from docker"}</code>. Stop with Ctrl+C.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="2"> Block 2 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 3</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-17">▶ Open VS Code here</a></div>
+  <h2>Multi-stage builds + .dockerignore</h2>
+  <div class="step">
+    <h4>1. Add <code>.dockerignore</code></h4>
+    <p class="do"><code>01-hello/.dockerignore</code>:</p>
+    <pre><code>.git
+.venv
+__pycache__
+*.log
+.DS_Store
+.env</code></pre>
+    <p class="why"><strong>Why:</strong> these files don't belong in your image. Smaller image, less risk of leaking secrets.</p>
+  </div>
+  <div class="step">
+    <h4>2. Multi-stage Dockerfile</h4>
+    <p class="do">Replace <code>Dockerfile</code> with:</p>
+    <pre><code>FROM python:3.13-slim AS builder
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir --target=/install -r requirements.txt
+
+FROM python:3.13-slim
+WORKDIR /app
+COPY --from=builder /install /usr/local/lib/python3.13/site-packages
+COPY app.py .
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]</code></pre>
+    <p class="do">Rebuild + compare sizes:</p>
+    <pre><code>docker build -t hello-fastapi:multi .
+docker images | findstr hello-fastapi</code></pre>
+    <div class="verify"><strong>Worked?</strong> Both versions build and run identically. Multi-stage may be a bit smaller.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="3"> Block 3 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 4</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-17">▶ Open VS Code here</a></div>
+  <h2>Env vars + volumes</h2>
+  <div class="step">
+    <h4>1. Read env in the app</h4>
+    <p class="do">Update <code>app.py</code>:</p>
+    <pre><code>from fastapi import FastAPI
+import os
+
+app = FastAPI()
+MESSAGE = os.getenv("MESSAGE", "default-hello")
+
+@app.get("/")
+def root(): return {"message": MESSAGE}</code></pre>
+    <p class="do">Rebuild + run with env override:</p>
+    <pre><code>docker build -t hello-env .
+docker run -e MESSAGE="hi from env" -p 8000:8000 hello-env</code></pre>
+    <div class="verify"><strong>Worked?</strong> Browser shows <code>"hi from env"</code>.</div>
+  </div>
+  <div class="step">
+    <h4>2. Try a volume mount</h4>
+    <p class="do">Stop the container. In a new terminal in <code>01-hello/</code>:</p>
+    <pre><code>mkdir data
+docker run -v "${PWD}/data:/app/data" -p 8000:8000 hello-env</code></pre>
+    <p class="do">Files in your local <code>data/</code> are shared with <code>/app/data</code> inside the container.</p>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="4"> Block 4 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 5</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-17">▶ Open VS Code here</a></div>
+  <h2>docker-compose for multi-service</h2>
+  <div class="step">
+    <h4>Create <code>02-compose/</code></h4>
+    <p class="do">Copy <code>app.py</code>, <code>requirements.txt</code>, <code>Dockerfile</code> from <code>01-hello/</code> into <code>02-compose/</code>.</p>
+    <p class="do">Create <code>02-compose/docker-compose.yml</code>:</p>
+    <pre><code>services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://pg:pass@db:5432/app
+    depends_on:
+      - db
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: pg
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:</code></pre>
+    <p class="do">Run:</p>
+    <pre><code>cd 02-compose
+docker compose up</code></pre>
+    <div class="verify"><strong>Worked?</strong> Both containers start. App on localhost:8000. Stop with Ctrl+C, then <code>docker compose down</code> to clean up.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="5"> Block 5 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 6</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-17">▶ Open VS Code here</a></div>
+  <h2>Deploy to Fly.io</h2>
+  <div class="step">
+    <h4>1. Install flyctl + sign up</h4>
+    <p class="do">In PowerShell:</p>
+    <pre><code>iwr https://fly.io/install.ps1 -useb | iex</code></pre>
+    <p class="do">Restart the terminal. Then:</p>
+    <pre><code>fly auth signup</code></pre>
+    <p class="do">Sign up via the browser window that opens (free tier, no card needed).</p>
+  </div>
+  <div class="step">
+    <h4>2. Deploy</h4>
+    <pre><code>cd 01-hello
+fly launch --no-deploy
+fly deploy</code></pre>
+    <p class="do">Accept the defaults during <code>fly launch</code> — it generates a <code>fly.toml</code>.</p>
+    <div class="verify"><strong>Worked?</strong> <code>fly status</code> shows the app running. Visit the URL it prints.</div>
+  </div>
+  <div class="step">
+    <h4>3. Tail logs</h4>
+    <pre><code>fly logs</code></pre>
+    <p class="do">Hit your Fly URL in Chrome — see the request appear in the log stream.</p>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="6"> Block 6 complete</label>
+</section>
+
+<section class="block">
+  <div class="block-head"><span class="block-num">Block 7</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-17">▶ Open VS Code here</a></div>
+  <h2>CI with GitHub Actions</h2>
+  <div class="step">
+    <h4>1. Create the workflow file</h4>
+    <p class="do">In your <code>01-hello/</code> folder, create <code>.github/workflows/ci.yml</code> (yes, two nested folders starting with a dot):</p>
+    <pre><code>name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r requirements.txt pytest httpx
+      - run: pytest -v</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Add a tiny test</h4>
+    <p class="do">Create <code>tests/test_app.py</code>:</p>
+    <pre><code>from fastapi.testclient import TestClient
+from app import app
+
+def test_root():
+    client = TestClient(app)
+    r = client.get("/")
+    assert r.status_code == 200</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. Push + watch CI run</h4>
+    <pre><code>git init
+git add .
+git commit -m "feat(docker): hello-fastapi with CI"
+gh repo create hello-fastapi --public --source=. --remote=origin --push</code></pre>
+    <p class="do">Open the repo on GitHub → Actions tab. Watch the green check.</p>
+    <div class="verify"><strong>Worked?</strong> CI passes. Future pushes auto-test.</div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="7"> Block 7 complete</label>
+</section>
+
+<section class="mini-project">
+  <div class="block-head"><span class="block-num">Block 8 · Mini-project</span><span class="block-time">~30 min</span><a class="open-ps-btn" href="aicourse:open-worksheet-17">▶ Open VS Code here</a></div>
+  <h2>Containerise + deploy your RAG app</h2>
+  <p>Take Worksheet 15's RAG app. Containerise. Deploy. CI it.</p>
+  <div class="step">
+    <h4>1. Add a Dockerfile to <code>15-rag/</code></h4>
+    <pre><code>FROM python:3.13-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]</code></pre>
+    <p class="do">Add <code>.dockerignore</code> with <code>.venv</code>, <code>__pycache__</code>, <code>.env</code>, <code>chroma_db</code>.</p>
+    <p class="do">Generate <code>requirements.txt</code> from the venv: <code>pip freeze &gt; requirements.txt</code>.</p>
+  </div>
+  <div class="step">
+    <h4>2. Build + test locally</h4>
+    <pre><code>docker build -t rag-demo .
+docker run -p 8000:8000 -e GEMINI_API_KEY=your-key rag-demo</code></pre>
+    <p class="do">Test the endpoint as in Worksheet 15.</p>
+  </div>
+  <div class="step">
+    <h4>3. Deploy to Fly.io</h4>
+    <pre><code>fly launch --no-deploy
+fly secrets set GEMINI_API_KEY=your-key
+fly deploy</code></pre>
+    <p class="do">Visit the public URL. Test from a real device.</p>
+  </div>
+  <div class="step">
+    <h4>4. Add CI to the repo</h4>
+    <p class="do">Same <code>.github/workflows/ci.yml</code> as block 7. Commit + push.</p>
+    <div class="verify"><strong>Worked?</strong> Public URL serves the RAG API. CI green. <strong>Counts towards Phase 5 MKT-01 / DAI-04.</strong></div>
+  </div>
+  <label class="block-checkbox"><input type="checkbox" data-block="8"> Block 8 complete</label>
+</section>
+
+<div class="footer-cta"><strong>Done? Tell Claude.</strong><p>That's all 17 worksheets — you've finished the entire pre-course scaffolding.</p></div>
+
+</main>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
+const slug='17-mlops-docker';
+document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb)=>{const key=`progress.${slug}.${cb.dataset.block}`;cb.checked=localStorage.getItem(key)==='1';cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');updateProgress();});});
+function updateProgress(){const all=document.querySelectorAll('input[type="checkbox"][data-block]');const done=[...all].filter(c=>c.checked).length;document.querySelector('.progress-fill').style.width=`${(done/all.length)*100}%`;}
+updateProgress();
+document.querySelectorAll('pre').forEach((pre)=>{const code=pre.querySelector('code');if(!code)return;const btn=document.createElement('button');btn.className='copy-btn';btn.type='button';btn.textContent='Copy';btn.addEventListener('click',async(e)=>{e.preventDefault();try{await navigator.clipboard.writeText(code.innerText);}catch{const ta=document.createElement('textarea');ta.value=code.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}btn.textContent='Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);});pre.appendChild(btn);});
+</script></body></html>
