@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="progress.js"></script>
 <style>
   .step { margin: 16px 0 22px; padding: 16px 18px; background: var(--card-soft); border-radius: 10px; border-left: 3px solid var(--accent); }
   .step h4 { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--fg); }
@@ -655,6 +656,11 @@ gh repo create python-wordcount --public --source=. --remote=origin --push</code
   <p>Open Claude from the hub and say: "I've finished Worksheet 02." Claude updates the master roadmap and refreshes the next-steps page.</p>
 </div>
 
+<p class="tracker-reset" style="text-align:center; font-size:12px; color:var(--fg-muted); margin:24px 0 0;">
+  <a href="#" onclick="event.preventDefault(); window.resetTracker('02-python-basics');" style="color:var(--fg-muted); text-decoration:underline;">Reset tracker to canonical state</a>
+  · clears your manual ticks so the on-disk state takes over
+</p>
+
 </main>
 
 <script type="module">
@@ -674,22 +680,7 @@ gh repo create python-wordcount --public --source=. --remote=origin --push</code
     }
   });
 
-  const slug = '02-python-basics';
-  document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb) => {
-    const key = `progress.${slug}.${cb.dataset.block}`;
-    cb.checked = localStorage.getItem(key) === '1';
-    cb.addEventListener('change', () => {
-      localStorage.setItem(key, cb.checked ? '1' : '0');
-      updateProgress();
-    });
-  });
-  function updateProgress() {
-    const all = document.querySelectorAll('input[type="checkbox"][data-block]');
-    const done = [...all].filter(c => c.checked).length;
-    const pct = (done / all.length) * 100;
-    document.querySelector('.progress-fill').style.width = `${pct}%`;
-  }
-  updateProgress();
+  window.initTracker('02-python-basics');
 
   document.querySelectorAll('pre').forEach((pre) => {
     const code = pre.querySelector('code');

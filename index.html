@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="progress.js"></script>
 <style>
   .hero {
     background: linear-gradient(135deg, var(--accent-soft) 0%, var(--card) 100%);
@@ -175,32 +176,32 @@
 
 <h2>Right now — do this</h2>
 <div class="focus-card">
-  <h2>Worksheet 02 — Python Basics · Block 1</h2>
-  <p class="focus-meta">~30 minutes · Setup — Python 3.13, venv, pip, VS Code</p>
+  <h2>Worksheet 03 — C Quickstart · Block 1</h2>
+  <p class="focus-meta">~30 minutes · Toolchain — gcc, hello.c, compile and run</p>
   <ol>
-    <li>Click <a href="02-python-basics.html#block-1"><strong>Open Worksheet 02 → Block 1</strong></a>.</li>
-    <li>Confirm Python 3.13: <code>python --version</code> (install from python.org if needed).</li>
-    <li>Make folder <code>study/python/01-basics/</code> and <code>cd</code> in.</li>
-    <li>Create + activate a venv: <code>python -m venv .venv</code> then <code>.\.venv\Scripts\activate</code>.</li>
-    <li>Smoke test: <code>pip install rich</code>, then <code>pip list</code>.</li>
-    <li>Open VS Code in the folder, pick the <code>.venv</code> interpreter, tick Block 1.</li>
+    <li>Click <a href="03-c-quickstart.html#block-1"><strong>Open Worksheet 03 &rarr; Block 1</strong></a>.</li>
+    <li>Open the <strong>MSYS2 UCRT64</strong> shell from your Start Menu (not the plain MSYS shell — gcc lives in UCRT64). Or run <code>C:\msys64\ucrt64.exe</code>.</li>
+    <li>Confirm the compiler: <code>gcc --version</code>. You should see <code>gcc.exe (Rev3, Built by MSYS2 project) 14.x.x</code>.</li>
+    <li>In the UCRT64 shell: <code>cd "/c/Users/David/Documents/AI Course/03-c-quickstart"</code>.</li>
+    <li>Create <code>hello.c</code> with a basic <code>printf("hello, world\n")</code> in <code>int main</code>. Save.</li>
+    <li>Compile and run: <code>gcc hello.c -o hello</code>, then <code>./hello</code>. Re-compile with warnings: <code>gcc -Wall -Wextra hello.c -o hello</code>.</li>
   </ol>
   <div class="why">
-    <strong>Worksheet 01 (Git Hygiene) shipped 2026-04-28</strong> — all 8 blocks done, real squash-merge PR on davidbuckley. Worksheet 02 prepares you for CS50P Lecture 0; 10 blocks total, ~5 hours, ending in a <code>wordcount.py</code> mini-project.
+    <strong>Worksheet 02 (Python Basics) shipped 2026-05-17</strong> — all 10 blocks done, <code>wordcount.py</code> live on GitHub. Worksheet 03 is the C primer for CS50x weeks 1-5; 8 blocks, ~4 hours, ending in a Caesar cipher mini-project.
   </div>
 </div>
 
 <h2>Quick actions</h2>
 <div class="quick-grid">
-  <a class="quick-card" href="02-python-basics.html">
+  <a class="quick-card" href="03-c-quickstart.html">
     <div class="label">Today's worksheet</div>
-    <h3>Open Worksheet 02 — Python Basics</h3>
+    <h3>Open Worksheet 03 — C Quickstart</h3>
     <p>Polished page with rendered diagrams, click-through checkboxes, and end-of-block checks. Read the next un-ticked block, do it, tick it.</p>
   </a>
-  <a class="quick-card" href="file:///C:/Users/David/Documents/AI%20Course/02-python-basics/">
+  <a class="quick-card" href="file:///C:/Users/David/Documents/AI%20Course/03-c-quickstart/">
     <div class="label">Practice folder</div>
     <h3>Open today's code folder</h3>
-    <p>Documents → AI Course → 02-python-basics. Save practice scripts and notes here so they sit alongside the worksheet topic.</p>
+    <p>Documents &rarr; AI Course &rarr; 03-c-quickstart. Save <code>.c</code> files and compiled binaries here alongside the worksheet topic.</p>
   </a>
   <a class="quick-card" href="file:///C:/Users/David/Documents/AI%20Course/Tools/Claude%20Terminal.bat">
     <div class="label">When stuck or done</div>
@@ -297,5 +298,53 @@
 </div>
 
 </main>
+
+<script>
+(function refreshHub() {
+  if (!window.PROGRESS) return;
+
+  let grandDone = 0;
+  let grandTotal = 0;
+
+  document.querySelectorAll('.course-item').forEach((item) => {
+    const slug = (item.getAttribute('href') || '').replace('.html', '');
+    const progress = window.PROGRESS[slug] || {};
+    const done = Object.values(progress).filter((v) => v === true).length;
+
+    const blocksSpan = item.querySelector('.blocks');
+    if (!blocksSpan) return;
+    const m = blocksSpan.textContent.match(/(\d+)\s*\/\s*(\d+)/);
+    if (!m) return;
+    const total = parseInt(m[2], 10);
+
+    blocksSpan.textContent = `${done} / ${total}`;
+    grandDone += done;
+    grandTotal += total;
+
+    const pill = item.querySelector('.pill');
+    item.classList.remove('current', 'done');
+    if (!pill) return;
+    pill.classList.remove('done', 'next', 'todo');
+    if (done >= total && total > 0) {
+      item.classList.add('done');
+      pill.classList.add('done');
+      pill.textContent = 'Done';
+    } else if (done > 0) {
+      item.classList.add('current');
+      pill.classList.add('next');
+      pill.textContent = 'In progress';
+    } else {
+      pill.classList.add('todo');
+      pill.textContent = 'To do';
+    }
+  });
+
+  const doneStat = document.querySelector('.stats .stat:nth-child(1) .num');
+  if (doneStat) doneStat.textContent = String(grandDone);
+
+  const fill = document.querySelector('.progress-bar .progress-fill');
+  if (fill && grandTotal > 0) fill.style.width = `${(grandDone / grandTotal) * 100}%`;
+})();
+</script>
 </body>
 </html>

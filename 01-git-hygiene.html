@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="progress.js"></script>
 <style>
   .step { margin: 16px 0 22px; padding: 16px 18px; background: var(--card-soft); border-radius: 10px; border-left: 3px solid var(--accent); }
   .step h4 { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--fg); }
@@ -736,6 +737,11 @@ git pull</code></pre>
   <p>Open Claude from the hub and say: "I've finished Worksheet 01." Claude updates the master roadmap and the next-steps page.</p>
 </div>
 
+<p class="tracker-reset" style="text-align:center; font-size:12px; color:var(--fg-muted); margin:24px 0 0;">
+  <a href="#" onclick="event.preventDefault(); window.resetTracker('01-git-hygiene');" style="color:var(--fg-muted); text-decoration:underline;">Reset tracker to canonical state</a>
+  · clears your manual ticks so the on-disk state takes over
+</p>
+
 </main>
 
 <script type="module">
@@ -756,22 +762,7 @@ git pull</code></pre>
     }
   });
 
-  const slug = '01-git-hygiene';
-  document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb) => {
-    const key = `progress.${slug}.${cb.dataset.block}`;
-    cb.checked = localStorage.getItem(key) === '1';
-    cb.addEventListener('change', () => {
-      localStorage.setItem(key, cb.checked ? '1' : '0');
-      updateProgress();
-    });
-  });
-  function updateProgress() {
-    const all = document.querySelectorAll('input[type="checkbox"][data-block]');
-    const done = [...all].filter(c => c.checked).length;
-    const pct = (done / all.length) * 100;
-    document.querySelector('.progress-fill').style.width = `${pct}%`;
-  }
-  updateProgress();
+  window.initTracker('01-git-hygiene');
 
   // Copy-to-clipboard buttons on every command block
   document.querySelectorAll('pre').forEach((pre) => {

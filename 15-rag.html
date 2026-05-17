@@ -4,6 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="progress.js"></script>
 <style>.step{margin:16px 0 22px;padding:16px 18px;background:var(--card-soft);border-radius:10px;border-left:3px solid var(--accent);}.step h4{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--fg);}.step .what,.step .why{color:var(--fg-soft);font-size:14px;margin:0 0 8px;}.step .why{color:var(--fg-muted);font-size:13px;font-style:italic;}.step .do{font-size:13px;color:var(--fg-soft);margin:8px 0 6px;font-weight:600;}.step .verify{margin-top:12px;padding:10px 14px;background:var(--success-soft);border-radius:8px;color:var(--success-fg);font-size:13px;}.launcher{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:20px 0 32px;}.launcher a{display:flex;flex-direction:column;padding:14px 18px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-fg);text-decoration:none;font-weight:600;}.launcher a small{font-weight:400;font-size:12px;color:var(--fg-soft);margin-top:4px;}</style>
 </head><body><main>
 
@@ -279,14 +280,16 @@ gh repo create rag-demo --public --source=. --remote=origin --push</code></pre>
 </section>
 
 <div class="footer-cta"><strong>Done? Tell Claude.</strong></div>
+
+<p class="tracker-reset" style="text-align:center; font-size:12px; color:var(--fg-muted); margin:24px 0 0;">
+  <a href="#" onclick="event.preventDefault(); window.resetTracker('15-rag');" style="color:var(--fg-muted); text-decoration:underline;">Reset tracker to canonical state</a>
+  · clears your manual ticks so the on-disk state takes over
+</p>
 </main>
 
 <script type="module">
 import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'#eef2ff',primaryTextColor:'#1e1b4b',primaryBorderColor:'#4f46e5',lineColor:'#475569',fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px'}});
-const slug='15-rag';
-document.querySelectorAll('input[type="checkbox"][data-block]').forEach((cb)=>{const key=`progress.${slug}.${cb.dataset.block}`;cb.checked=localStorage.getItem(key)==='1';cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');updateProgress();});});
-function updateProgress(){const all=document.querySelectorAll('input[type="checkbox"][data-block]');const done=[...all].filter(c=>c.checked).length;document.querySelector('.progress-fill').style.width=`${(done/all.length)*100}%`;}
-updateProgress();
+window.initTracker('15-rag');
 document.querySelectorAll('pre').forEach((pre)=>{const code=pre.querySelector('code');if(!code)return;const btn=document.createElement('button');btn.className='copy-btn';btn.type='button';btn.textContent='Copy';btn.addEventListener('click',async(e)=>{e.preventDefault();try{await navigator.clipboard.writeText(code.innerText);}catch{const ta=document.createElement('textarea');ta.value=code.innerText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}btn.textContent='Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);});pre.appendChild(btn);});
 </script></body></html>
