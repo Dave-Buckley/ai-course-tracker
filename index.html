@@ -144,6 +144,8 @@
   }
   .course-item .pill.next { background: var(--accent); color: white; }
   .course-item .pill.todo { background: var(--card-soft); color: var(--fg-muted); }
+  .course-item .pill.done { background: #16a34a; color: white; }
+  .course-item.done .num { color: #16a34a; }
 
   .stats {
     display: grid;
@@ -168,37 +170,37 @@
 <div class="hero">
   <span class="kicker">AI Career Pivot</span>
   <h1>Today's Course Steps</h1>
-  <p>Last refreshed 2026-04-26. Open this page each session, click straight through to whatever you need.</p>
+  <p>Last refreshed 2026-05-17. Open this page each session, click straight through to whatever you need.</p>
 </div>
 
 <h2>Right now — do this</h2>
 <div class="focus-card">
-  <h2>Worksheet 01 — Git Hygiene · Block 6</h2>
-  <p class="focus-meta">~30 minutes · Recovery — reset, revert, stash</p>
+  <h2>Worksheet 02 — Python Basics · Block 1</h2>
+  <p class="focus-meta">~30 minutes · Setup — Python 3.13, venv, pip, VS Code</p>
   <ol>
-    <li>Click <a href="01-git-hygiene.html#block-6"><strong>Open Worksheet 01 → Block 6</strong></a>.</li>
-    <li>Try <code>reset --soft</code> — undoes the commit but keeps your changes staged.</li>
-    <li>Try <code>reset --hard</code> — destroys changes (only safe on local-only branches).</li>
-    <li>Try <code>revert</code> — the safe way to undo a published commit (creates a new commit).</li>
-    <li>Try <code>stash</code> — park uncommitted changes while you switch branches.</li>
-    <li>Tick Block 6 checkbox.</li>
+    <li>Click <a href="02-python-basics.html#block-1"><strong>Open Worksheet 02 → Block 1</strong></a>.</li>
+    <li>Confirm Python 3.13: <code>python --version</code> (install from python.org if needed).</li>
+    <li>Make folder <code>study/python/01-basics/</code> and <code>cd</code> in.</li>
+    <li>Create + activate a venv: <code>python -m venv .venv</code> then <code>.\.venv\Scripts\activate</code>.</li>
+    <li>Smoke test: <code>pip install rich</code>, then <code>pip list</code>.</li>
+    <li>Open VS Code in the folder, pick the <code>.venv</code> interpreter, tick Block 1.</li>
   </ol>
   <div class="why">
-    <strong>Progress so far:</strong> Blocks 1–5 done (setup, commits, branches, merge vs rebase, full PR cycle). Block 7 next is <code>.gitignore</code> + log/blame/diff. Block 8 is the mini-project on your real portfolio.
+    <strong>Worksheet 01 (Git Hygiene) shipped 2026-04-28</strong> — all 8 blocks done, real squash-merge PR on davidbuckley. Worksheet 02 prepares you for CS50P Lecture 0; 10 blocks total, ~5 hours, ending in a <code>wordcount.py</code> mini-project.
   </div>
 </div>
 
 <h2>Quick actions</h2>
 <div class="quick-grid">
-  <a class="quick-card" href="01-git-hygiene.html">
+  <a class="quick-card" href="02-python-basics.html">
     <div class="label">Today's worksheet</div>
-    <h3>Open Worksheet 01 — Git Hygiene</h3>
+    <h3>Open Worksheet 02 — Python Basics</h3>
     <p>Polished page with rendered diagrams, click-through checkboxes, and end-of-block checks. Read the next un-ticked block, do it, tick it.</p>
   </a>
-  <a class="quick-card" href="file:///C:/Users/David/Documents/AI%20Course/01-git-hygiene/">
+  <a class="quick-card" href="file:///C:/Users/David/Documents/AI%20Course/02-python-basics/">
     <div class="label">Practice folder</div>
     <h3>Open today's code folder</h3>
-    <p>Documents → AI Course → 01-git-hygiene. Save practice scripts and notes here so they sit alongside the worksheet topic.</p>
+    <p>Documents → AI Course → 02-python-basics. Save practice scripts and notes here so they sit alongside the worksheet topic.</p>
   </a>
   <a class="quick-card" href="file:///C:/Users/David/Documents/AI%20Course/Tools/Claude%20Terminal.bat">
     <div class="label">When stuck or done</div>
@@ -224,23 +226,23 @@
 
 <h2>Progress overview</h2>
 <div class="stats">
-  <div class="stat"><div class="num">5</div><div class="label">Blocks done</div></div>
+  <div class="stat"><div class="num">8</div><div class="label">Blocks done</div></div>
   <div class="stat"><div class="num">158</div><div class="label">Total blocks</div></div>
   <div class="stat"><div class="num">~79</div><div class="label">Hours of study</div></div>
-  <div class="stat"><div class="num">0</div><div class="label">Mini-projects shipped</div></div>
+  <div class="stat"><div class="num">1</div><div class="label">Mini-projects shipped</div></div>
 </div>
 
-<div class="progress-bar"><div class="progress-fill" style="width: 3.2%"></div></div>
+<div class="progress-bar"><div class="progress-fill" style="width: 5.1%"></div></div>
 
 <h2>Course order</h2>
 <p style="color: var(--fg-muted); font-size: 14px;">17 pre-course worksheets, sequenced so each prepares you for the next. Each block is ~30 minutes. The pre-course scaffolding is ~80 hours; the actual courses (CS50, fast.ai, Andrew Ng) sit on top.</p>
 
 <div class="course-list">
-  <a class="course-item current" href="01-git-hygiene.html">
-    <span class="num">01</span><span class="name">Git Hygiene</span><span class="blocks">5 / 8</span><span class="pill next">In progress</span>
+  <a class="course-item done" href="01-git-hygiene.html">
+    <span class="num">01</span><span class="name">Git Hygiene</span><span class="blocks">8 / 8</span><span class="pill done">Done</span>
   </a>
-  <a class="course-item" href="02-python-basics.html">
-    <span class="num">02</span><span class="name">Python Basics</span><span class="blocks">0 / 10</span><span class="pill todo">To do</span>
+  <a class="course-item current" href="02-python-basics.html">
+    <span class="num">02</span><span class="name">Python Basics</span><span class="blocks">0 / 10</span><span class="pill next">In progress</span>
   </a>
   <a class="course-item" href="03-c-quickstart.html">
     <span class="num">03</span><span class="name">C Quickstart</span><span class="blocks">0 / 8</span><span class="pill todo">To do</span>
